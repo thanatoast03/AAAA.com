@@ -1,0 +1,14 @@
+node_modules
+.env
+.parcel-cache
+dist
+
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+application.properties
+
+### VS Code ###
+.vscode/
