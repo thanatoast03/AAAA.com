@@ -14,16 +14,16 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "1234:1234"
+    expose:
+      - "1234"
     volumes:
       - ./frontend:/app
       - /app/node_modules
 
   backend:
     build: ./backend
-    ports:
-      - "8080:8080"
+    expose:
+    - "8080"
     volumes:
       - ./backend:/app
     environment:
@@ -37,7 +37,7 @@ services:
     image: mysql:latest
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=yourdbname
+      - MYSQL_DATABASE=supersecretunguessabledbname
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
