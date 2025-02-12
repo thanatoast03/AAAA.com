@@ -1,8 +1,13 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const location = useLocation();
+
+    const navigateLogin = () => {
+        navigate("/login")
+    }
 
     //todo: check if authenticated
     //todo: check if admin
@@ -13,7 +18,7 @@ const Navbar = () => {
             <div className="flex flex-row text-2xl px-5 sm:mr-2">
                 <h1 className="p-3">Register</h1>
                 <h1 className="py-3">|</h1>
-                <h1 className="p-3">Login</h1>
+                <h1 className="p-3 hover:cursor-pointer" onClick={() => navigateLogin()}>Login</h1>
             </div>
         </nav>
     );

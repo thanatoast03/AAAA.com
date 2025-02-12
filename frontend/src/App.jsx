@@ -1,7 +1,8 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import './index.css';  // import tailwind css file
-import Landing from './pages/Landing.jsx'
+import Landing from './pages/Landing.jsx';
+import Login from './pages/Login.jsx';
 import Navbar from './Navbar.jsx';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
                 <Navbar />
                 <Routes>
                     <Route path="/" element={<Landing />} />
+                    <Route path="/login" element={<Login />} />
                 </Routes>
             </HashRouter>
         </div>
