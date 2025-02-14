@@ -6,7 +6,7 @@ import Navbar from './Navbar.jsx';
 
 function App() {
     return (
-        <div className='h-screen flex flex-col bg-[#353535]'>
+        <div className='h-screen max-h-screen flex flex-col bg-[#353535]'>
             <HashRouter>
                 <Navbar />
                 <Routes>
