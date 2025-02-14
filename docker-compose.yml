@@ -25,7 +25,8 @@ services:
     expose:
     - "8080"
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app/src
+      - ./backend/pom.xml:/app/pom.xml
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/supersecretunguessabledbname
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
