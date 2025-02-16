@@ -32,35 +32,33 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("used handle submit");
-
-        if(!window.grecaptcha) {
+        
+        if (!window.grecaptcha) {
             alert("ReCAPTCHA not loaded yet");
             return;
         }
-
-        const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" })
-        setCaptchaToken(token);
-
-        const formData = new FormData();
-        formData.append("username", username);
-        formData.append("email", email);
-        formData.append("password", password);
-        formData.append("confirmPassword", confirmPassword);
-        formData.append("g-recaptcha-response",captchaToken);
-
-        fetch("/api/register", {
-            method: "POST",
-            body: formData,
-        })
-        .then((response) => response.json())
-        .then((data) => {
+    
+        try {
+            const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
+            
+            const formData = new FormData();
+            formData.append("username", username);
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("confirmPassword", confirmPassword);
+            formData.append("g-recaptcha-response", token); // use token directly
+    
+            const response = await fetch("/api/register", {
+                method: "POST",
+                body: formData,
+            });
+            
+            const data = await response.json();
             console.log("Success: ", data);
-        })
-        .catch((error) => {
-            console.error("Error: ", error)
-        });
-    }
+        } catch (error) {
+            console.error("Error: ", error);
+        }
+    };
 
     return (
         <div className="flex h-full text-white sm:px-10 justify-center sm:justify-start">
@@ -71,10 +69,10 @@ const Register = () => {
                 <div className="p-14 rounded-xl shadow-2xl w-97 flex flex-col gap-4 bg-[#2A2A2A]">
                     <h1 className="text-4xl font-bold text-white pb-10">Create an Account</h1>
                     <form className="flex flex-col" onSubmit={handleSubmit} >
-                        <input type="text" placeholder="Username" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setUsername(e)} maxLength="32"/>
-                        <input type="text" placeholder="Email" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setEmail(e)} maxLength="320"/>
-                        <input type="text" placeholder="Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setPassword(e)} maxLength="128"/>
-                        <input type="text" placeholder="Confirm Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-10 bg-[#443F3F]"onChange={(e) => setConfirmPassword(e)} maxLength="128"/>
+                        <input type="text" placeholder="Username" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setUsername(e.target.value)} maxLength="32"/>
+                        <input type="text" placeholder="Email" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setEmail(e.target.value)} maxLength="320"/>
+                        <input type="password" placeholder="Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setPassword(e.target.value)} maxLength="128"/>
+                        <input type="password" placeholder="Confirm Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-10 bg-[#443F3F]"onChange={(e) => setConfirmPassword(e.target.value)} maxLength="128"/>
                         <button type="submit" className="w-2/3 text-white p-2 rounded font-casual bg-[#1AC472]">Register</button>
                     </form>
                     
