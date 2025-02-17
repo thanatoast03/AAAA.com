@@ -4,6 +4,7 @@ import './index.css';  // import tailwind css file
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Navbar from './Navbar.jsx';
+import Register from './pages/Register.jsx';
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
                 <Navbar />
                 <Routes>
                     <Route path="/" element={<Landing />} />
+                    <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
                 </Routes>
             </HashRouter>
