@@ -1,0 +1,38 @@
+package com.example.backend.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+    
+    @Value("${spring.profiles.active}") // Get active profile
+    private String activeProfile;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        if ("dev".equals(activeProfile)) {
+            // disable security in dev mode
+            return http
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // Allow all
+                    .build();
+        } else {
+            // enable security in production
+            // for now, just don't (just checking)
+            // when i disabled it, it said it couldn't find /accounts/register which means API is being removed?
+            return http
+                    .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/accounts/register", "/accounts/login")
+                    )
+                    .authorizeHttpRequests(auth -> auth // added something for turning off CSRF
+                            .requestMatchers("/accounts/register", "/accounts/login").permitAll() // Allow landing, register, and login without auth
+                            .anyRequest().authenticated() // Everything else requires authentication
+                    )
+                    .build();
+        }
+    }
+}
