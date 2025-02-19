@@ -15,7 +15,21 @@ const Chatroom = () => {
         // const sampleData = ["cpapa","braindoko","nimi nightmare"]
         // setOnlineList(sampleData);
         // setAnyOnline(true);
-        const sampleData = [{"name":"braindoko", "time":"02/18/25 6:47PM", "text":"LALAALALALALALALAALALALALALLALALALALALALALALALALALALALAALLAALLALA :FaunaFlushedDoodle:"}]
+        const sampleData = [
+            {"name":"braindoko", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"LALAALALALALALALAALALALALALLALALALALALALALALALALALALALAALLAALLALA :FaunaFlushedDoodle:"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"LALALALALALALALALALAALLAALLALALALALALALALALALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALA"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:48PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:49PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:50PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:51PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:52PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:53PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:54PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:55PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:56PM", "text":"scroll"},
+            {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:57PM", "text":"scroll"},
+        ]
         setMessageList(sampleData);
         setHasMessages(true);
     }, [])
@@ -33,13 +47,14 @@ const Chatroom = () => {
             <div className="messagePanel">
                 <div className="messageArea">
                     {hasMessages && messageList.map((message,index) => (
-                        <div key={index} className="message">
-                            <div className="messageHeader">
-                                <span className="messageName">{message.name}</span>
-                                <span className="messageTime">{message.time}</span>
-                            </div>
-                            <div className="messageText">
-                                {message.text}
+                        <div className="messageContainer">
+                            <img src={online}/>
+                            <div key={index} className="message">
+                                <div className="messageHeader">
+                                    <span className="messageName">{message.name}</span>
+                                    <span className="messageTime">{message.time}</span>
+                                </div>
+                                <p>{message.text}</p>
                             </div>
                         </div>
                     ))}

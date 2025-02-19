@@ -15,30 +15,31 @@
 .messageArea { /** For the area in which messages are rendered*/
     height: 90%;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
     flex-direction: column;
     overflow-y: auto;
 }
 
 .sendArea {
+    height: 10%;
+    width: 100%;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2A2A2A;
 }
 
-.sendArea input { /** For the type message box*/
-    margin-left: 20px;
+.sendArea input {
     border-radius: 4px;
     background-color: #5A5A5A;
-    width: 95%;
+    width: 85%;
     outline: none;
     color: white;
     padding: 10px;
 }
 
-.sendArea img {
-    width: 30%;
-    margin-left: -5px;
-    border-radius: 4px;
+.sendArea button {
+    width: 3%;
 }
 
 /** Message Stuff*/
@@ -48,14 +49,37 @@
     border-color: #1AC472;
     border-width: 3px;
     border-radius: 4px;
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+    hyphens: auto;
+}
+
+.messageContainer {
     max-width: 90%;
-    margin-bottom: 5%;
-    margin-right: 2%;
-    align-self: flex-end;
+    width: 90%;
+    display: flex;
+    margin-bottom: 2%;
+    align-self: flex-start;
+}
+
+.messageContainer img {
+    width: 80px;
+    height: 80px;
 }
 
 .messageHeader {
-    
+    display: flex;
+    justify-content: space-between;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.messageContainer p {
+    max-width: 90%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 
