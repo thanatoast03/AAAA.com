@@ -40,7 +40,7 @@ const Register = () => {
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
     
-            const response = await fetch("/accounts/register", {
+            const response = await fetch("/api/accounts/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
