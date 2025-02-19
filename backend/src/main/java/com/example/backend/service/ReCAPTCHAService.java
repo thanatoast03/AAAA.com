@@ -10,14 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.Data;
-
 @Service
 public class ReCAPTCHAService {
     @Value("${CAPTCHA_SECRET_KEY}")
     private String recaptchaSecret;
 
-    @Data
     private static class RecaptchaResponse {
         private boolean success;
         private double score;
@@ -25,6 +22,54 @@ public class ReCAPTCHAService {
         private String hostname;
         private String[] errorCodes;
         private String challenge_ts;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public double getScore() {
+            return score;
+        }
+
+        public void setScore(double score) {
+            this.score = score;
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+
+        public String getHostname() {
+            return hostname;
+        }
+
+        public void setHostname(String hostname) {
+            this.hostname = hostname;
+        }
+
+        public String[] getErrorCodes() {
+            return errorCodes;
+        }
+
+        public void setErrorCodes(String[] errorCodes) {
+            this.errorCodes = errorCodes;
+        }
+
+        public String getChallenge_ts() {
+            return challenge_ts;
+        }
+
+        public void setChallenge_ts(String challenge_ts) {
+            this.challenge_ts = challenge_ts;
+        }
     }
 
     public boolean verifyRecaptcha(String token) {
@@ -45,4 +90,7 @@ public class ReCAPTCHAService {
 
         return response != null && response.isSuccess() && response.getScore() >= 0.5;
     }
+
+
+
 }
