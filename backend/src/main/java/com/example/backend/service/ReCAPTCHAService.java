@@ -1,13 +1,12 @@
 package com.example.backend.service;
 
-import java.util.HashMap;
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -77,20 +76,34 @@ public class ReCAPTCHAService {
         
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HashMap<String, String> body = new HashMap<>(); // setup hash map
-        body.put("secret", recaptchaSecret);
-        body.put("response", token);
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("secret", recaptchaSecret);
+        body.add("response", token);
         
-        String requestJson = new JSONObject(body).toString(); // turn into JSON
-                    
-        HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
-        RecaptchaResponse response = restTemplate.postForObject(url, entity, RecaptchaResponse.class); // send to verify
-
-        return response != null && response.isSuccess() && response.getScore() >= 0.5;
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+        
+        try {
+            RecaptchaResponse response = restTemplate.postForObject(url, entity, RecaptchaResponse.class);
+            
+            if (response != null && !response.isSuccess()) {
+                System.out.println("Verification failed:");
+                System.out.println("Success: " + response.isSuccess());
+                System.out.println("Score: " + response.getScore());
+                System.out.println("Hostname: " + response.getHostname());
+                System.out.println("Action: " + response.getAction());
+                if (response.getErrorCodes() != null) {
+                    System.out.println("Error codes: " + String.join(", ", response.getErrorCodes()));
+                }
+                System.out.println("Challenge timestamp: " + response.getChallenge_ts());
+            }
+            
+            return response != null && response.isSuccess() && response.getScore() >= 0.5;
+            
+        } catch (Exception e) {
+            System.err.println("Error verifying reCAPTCHA: " + e.getMessage());
+            return false;
+        }
     }
-
-
-
 }
