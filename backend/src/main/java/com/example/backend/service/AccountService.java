@@ -3,14 +3,11 @@ import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.model.Account;
 import com.example.backend.repository.AccountRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountService {
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private final AccountRepository accountRepository;
@@ -19,7 +16,6 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-    @Transactional
     public Account saveAccount(RegisterRequest registerRequest) {
         // check if email/username already exists
         if (accountRepository.existsByEmail(registerRequest.getEmail())) { throw new RuntimeException("Email already registered!"); }
