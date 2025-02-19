@@ -2,7 +2,6 @@ import { React, useState, useEffect} from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
 
 const Register = () => {
-    const [captchaToken, setCaptchaToken] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -40,17 +39,16 @@ const Register = () => {
     
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
-            
-            const formData = new FormData();
-            formData.append("username", username);
-            formData.append("email", email);
-            formData.append("password", password);
-            formData.append("confirmPassword", confirmPassword);
-            formData.append("g-recaptcha-response", token); // use token directly
     
-            const response = await fetch("/api/register", {
+            const response = await fetch("/api/accounts/register", {
                 method: "POST",
-                body: formData,
+                body: {
+                    "username": username,
+                    "email": email, 
+                    "password": password,
+                    "confirmPassword": confirmPassword, 
+                    "recaptchaToken": token
+                },
             });
             
             const data = await response.json();
