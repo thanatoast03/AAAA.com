@@ -1,0 +1,103 @@
+/** Container for the chatroom itself*/
+.chatroomContainer{
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+/** Message Panel Stuff*/
+.messagePanel { /** The panel itself includes the type message box and message rendering area*/
+    display: flex;
+    flex-direction: column;
+    flex: 7;
+}
+
+.messageArea { /** For the area in which messages are rendered*/
+    height: 90%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sendArea {
+    display: flex;
+}
+
+.sendArea input { /** For the type message box*/
+    margin-left: 20px;
+    border-radius: 4px;
+    background-color: #5A5A5A;
+    width: 95%;
+    outline: none;
+    color: white;
+    padding: 10px;
+}
+
+.sendArea img {
+    width: 30%;
+    margin-left: -5px;
+    border-radius: 4px;
+}
+
+/** Message Stuff*/
+.message {
+    color: white;
+    background-color: #2A2A2A;
+    border-color: #1AC472;
+    border-width: 3px;
+    border-radius: 4px;
+    max-width: 90%;
+    margin-bottom: 5%;
+    margin-right: 2%;
+    align-self: flex-end;
+}
+
+.messageHeader {
+    
+}
+
+
+/** Member Panel Stuff */
+
+.memberPanel { /** The panel itself includes the search bar and members online list*/
+    flex: 3;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background-color: #2A2A2A;
+}
+
+.memberPanel input { /** For the member search bar */
+    background-color: #5A5A5A;
+    border-radius: 4px;
+    height: 5%;
+    width: 90%;
+    margin-top: 2%;
+}
+
+.memberPanel h1 { /** For the members online heading*/
+    color: white;
+    font-size: 200%;
+    font-family: font-casual;
+    margin-top: 2%;
+}
+
+.onlineMembers p {
+    color: white;
+}
+
+.memberCell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.memberCell p {
+    margin: 0;
+}
+
+.memberCell img {
+    width: 10%;
+}
