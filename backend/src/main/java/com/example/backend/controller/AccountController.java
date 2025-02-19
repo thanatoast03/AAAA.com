@@ -6,7 +6,6 @@ import com.example.backend.service.ReCAPTCHAService;
 
 import java.util.HashMap;
 
-import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +21,7 @@ public class AccountController {
     private ReCAPTCHAService recaptchaService;
 
     @PostMapping("/register")
-    public JSONArray registerAccount(@Validated @RequestBody RegisterRequest request, BindingResult bindingResult) {
+    public HashMap<String, String> registerAccount(@Validated @RequestBody RegisterRequest request, BindingResult bindingResult) {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("success", "false");
 
@@ -45,6 +44,7 @@ public class AccountController {
             try {
                 accountService.saveAccount(request);
                 map.put("success", "true");
+                System.out.println("Successfully registered account");
             } catch (RuntimeException e) {
                 map.put("reason", e.getMessage());   
             }
@@ -53,7 +53,6 @@ public class AccountController {
             map.put("reason", e.getMessage());
         }
 
-        JSONArray jsonArray = new JSONArray(map); 
-        return jsonArray;
+        return map;
     }
 }

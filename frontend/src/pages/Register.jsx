@@ -40,19 +40,23 @@ const Register = () => {
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
     
-            const response = await fetch("/api/accounts/register", {
+            const response = await fetch("/accounts/register", {
                 method: "POST",
-                body: {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
                     "username": username,
                     "email": email, 
                     "password": password,
                     "confirmPassword": confirmPassword, 
                     "recaptchaToken": token
-                },
-            });
+                }),
+            })
+            .then(response => response.json())
+            .then(data => console.log("Success: ", data))
+            .catch(error => console.error("Error:", error));
             
-            const data = await response.json();
-            console.log("Success: ", data);
         } catch (error) {
             console.error("Error: ", error);
         }

@@ -24,7 +24,7 @@ public class SecurityConfig {
             // enable security in production
             return http
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/register", "/login").permitAll() // Allow landing, register, and login without auth
+                            .requestMatchers("/accounts/register", "/accounts/login").permitAll() // Allow landing, register, and login without auth
                             .anyRequest().authenticated() // Everything else requires authentication
                     )
                     .build();
