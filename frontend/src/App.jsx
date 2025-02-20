@@ -6,6 +6,7 @@ import Login from './pages/Login.jsx';
 import Navbar from './Navbar.jsx';
 import Register from './pages/Register.jsx';
 import Chatroom from './pages/Chatroom.jsx';
+import Settings from './pages/Settings.jsx';
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/chatroom" element={<Chatroom />}/>
+                    <Route path="/settings" element={<Settings />}/>
                 </Routes>
             </HashRouter>
         </div>
