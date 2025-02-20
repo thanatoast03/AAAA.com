@@ -1,4 +1,4 @@
-import { React, useState, useEffect} from "react";
+import { React, useState, useEffect, useNavigate } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
 
 const Register = () => {
@@ -6,7 +6,7 @@ const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [registerStatus, setRegisterStatus] = useState("error");
+    const [registerStatus, setRegisterStatus] = useState("");
     
     useEffect(() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -29,6 +29,10 @@ const Register = () => {
             document.querySelectorAll(".grecaptcha-badge, [src*='recaptcha/api.js']").forEach((el) => el.remove());
         }
     }, []);
+
+    const navLog = () => {
+        useNavigate("/login")
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,6 +60,7 @@ const Register = () => {
             })
             .then(response => response.json())
             .then(data => setRegisterStatus(""))
+            .then(navLog())
             .catch(error => setRegisterStatus("error: "+error));
             
         } catch (error) {
