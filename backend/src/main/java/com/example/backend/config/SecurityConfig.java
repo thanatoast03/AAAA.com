@@ -21,9 +21,6 @@ public class SecurityConfig {
                     .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // Allow all
                     .build();
         } else {
-            // enable security in production
-            // for now, just don't (just checking)
-            // when i disabled it, it said it couldn't find /accounts/register which means API is being removed?
             return http
                     .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/accounts/register", "/accounts/login")
