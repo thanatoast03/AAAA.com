@@ -16,6 +16,8 @@ services:
     build: ./frontend
     expose:
       - "1234"
+    # ports:
+    #   - "1234:1234"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -23,10 +25,9 @@ services:
   backend:
     build: ./backend
     expose:
-    - "8080"
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/pom.xml:/app/pom.xml
+      - "8080"
+    # ports:
+    #   - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/supersecretunguessabledbname
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
@@ -39,8 +40,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=supersecretunguessabledbname
-      - MYSQL_USER=${DB_USERNAME}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
     expose:
