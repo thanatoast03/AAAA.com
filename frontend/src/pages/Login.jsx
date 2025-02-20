@@ -4,6 +4,7 @@ import messageGraphic from "../assets/graphics/messageGraphic.png";
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loginStatus, setLoginStatus] = useState("error error error error error error error error error error error error error error error error error error error error error ");
 
     useEffect (() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -50,11 +51,11 @@ const Login = () => {
                 }),
             })
             .then(response => response.json())
-            .then(data => console.log("Success: ", data))
-            .catch(error => console.error("Error:", error));
+            .then(data => setLoginStatus(""))
+            .catch(error => setLoginStatus(error));
             
         } catch (error) {
-            console.error("Error: ", error);
+            setLoginStatus(error);
         }
     };
 
@@ -69,6 +70,7 @@ const Login = () => {
                     <form method="POST" className="flex flex-col" onSubmit={handleSubmit} >
                         <input type="text" placeholder="Email" className="border border-gray-600 p-2 rounded w-full text-white placeholder-gray-400 mb-5 bg-[#443F3F]" onChange={(e) => setEmail(e.target.value)} maxLength="320"/>
                         <input type="password" placeholder="Password" className="border border-gray-600 p-2 rounded w-full text-white placeholder-gray-400 mb-10 bg-[#443F3F]" onChange={(e) => setPassword(e.target.value)} maxLength="128"/>
+                        <p className="text-[#FF0000] mb-2 max-w-screen-sm">{loginStatus}</p>
                         <button type="submit" className="w-1/2 text-white p-2 rounded bg-[#1AC472]">Login</button>
                     </form>
                 </div>
