@@ -4,7 +4,7 @@ import messageGraphic from "../assets/graphics/messageGraphic.png";
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loginStatus, setLoginStatus] = useState("error error error error error error error error error error error error error error error error error error error error error ");
+    const [loginStatus, setLoginStatus] = useState("");
 
     useEffect (() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
