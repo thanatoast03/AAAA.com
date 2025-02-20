@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.service.AccountService;
 import com.example.backend.service.ReCAPTCHAService;
@@ -50,6 +51,37 @@ public class AccountController {
             }
 
         } catch (Exception e) {
+            map.put("reason", e.getMessage());
+        }
+
+        return map;
+    }
+
+    @PostMapping("/login")
+    public HashMap<String, String> login(@Validated @RequestBody LoginRequest request, BindingResult bindingResult) {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("success", "false");
+
+        try {
+            // any binding errors from field input errors/attack attempts
+            if (bindingResult.hasErrors()) {
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            // reCAPTCHA verification
+            if (!recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
+                throw new Exception("reCAPTCHA verification failed");
+            }
+
+            try {
+                accountService.loginAccount(request);
+                map.put("success", "true");
+                System.out.println("Successfully logged into account");
+            } catch (RuntimeException e) {
+                map.put("reason", e.getMessage());   
+            }
+
+        } catch (Exception e) { 
             map.put("reason", e.getMessage());
         }
 

@@ -1,7 +1,9 @@
 package com.example.backend.service;
+import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.model.Account;
 import com.example.backend.repository.AccountRepository;
+import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,5 +32,17 @@ public class AccountService {
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         return accountRepository.save(account); // save to DB
+    }
+
+    public void loginAccount(LoginRequest loginRequest) {
+        Optional<Account> optionalAccount = accountRepository.findByEmail(loginRequest.getEmail().toLowerCase().trim());
+
+        // if no account found with matching email
+        if (optionalAccount.isEmpty()) { throw new RuntimeException("Incorrect email/password"); }
+        
+        Account account = optionalAccount.get(); // if it reaches here, that means there is an account associated
+
+        // if password does not match DB hash
+        if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) { throw new RuntimeException("Incorrect email/password"); }
     }
 }
