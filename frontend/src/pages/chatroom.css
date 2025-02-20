@@ -1,0 +1,136 @@
+/** Container for the chatroom itself*/
+.chatroomContainer{
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/** Message Panel Stuff*/
+.messagePanel { /** The panel itself includes the type message box and message rendering area*/
+    display: flex;
+    flex-direction: column;
+    flex: 7;
+    height: 100%;
+    position: relative;
+}
+
+.messageArea { /** For the area in which messages are rendered*/
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 10%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sendArea {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2A2A2A;
+}
+
+.sendArea input {
+    border-radius: 4px;
+    background-color: #5A5A5A;
+    width: 85%;
+    outline: none;
+    color: white;
+    padding: 10px;
+}
+
+.sendArea button {
+    width: 3%;
+}
+
+/** Message Stuff*/
+.message {
+    color: white;
+    background-color: #2A2A2A;
+    border-color: #1AC472;
+    border-width: 3px;
+    border-radius: 4px;
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+    hyphens: auto;
+}
+
+.messageContainer {
+    max-width: 90%;
+    width: 90%;
+    display: flex;
+    margin-bottom: 2%;
+    align-self: flex-start;
+}
+
+.messageContainer img {
+    width: 80px;
+    height: 80px;
+}
+
+.messageHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.messageContainer p {
+    max-width: 90%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/** Member Panel Stuff */
+
+.memberPanel { /** The panel itself includes the search bar and members online list*/
+    flex: 3;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background-color: #2A2A2A;
+}
+
+.memberPanel input { /** For the member search bar */
+    background-color: #5A5A5A;
+    border-radius: 4px;
+    height: 5%;
+    width: 90%;
+    margin-top: 2%;
+}
+
+.memberPanel h1 { /** For the members online heading*/
+    color: white;
+    font-size: 200%;
+    font-family: font-casual;
+    margin-top: 2%;
+}
+
+.onlineMembers p {
+    color: white;
+}
+
+.memberCell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.memberCell p {
+    margin: 0;
+}
+
+.memberCell img {
+    width: 10%;
+}
