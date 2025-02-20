@@ -15,7 +15,6 @@ COPY . .
 # build w/ parcel
 RUN npm run build
 
-# todo: this exposes port; figure out whether it's 3000 or 1234 because of parcel 
 EXPOSE 1234
 
 # start app
