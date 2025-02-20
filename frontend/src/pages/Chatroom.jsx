@@ -1,4 +1,4 @@
-import { React, useState, useEffect} from "react";
+import { React, useState, useEffect, useRef} from "react";
 import './chatroom.css';
 import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
@@ -9,6 +9,16 @@ const Chatroom = () => {
     const [onlineList,setOnlineList] = useState([]); //list of all members who are online
     const [hasMessages, setHasMessages] = useState(false); //have any messages been sent ever?
     const [anyOnline,setAnyOnline] = useState(false); //is anyone online?
+
+    const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        scrollToBottom();
+    },[messageList])
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect(() => {
         //getMessages(); //gets messages for current user
@@ -58,6 +68,7 @@ const Chatroom = () => {
                             </div>
                         </div>
                     ))}
+                    <div ref={messagesEndRef}/>
                 </div>
                 <div className="sendArea">
                     <input type="text" placeholder="Type message here..."></input>
