@@ -5,6 +5,7 @@ import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Navbar from './Navbar.jsx';
 import Register from './pages/Register.jsx';
+import Chatroom from './pages/Chatroom.jsx';
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                     <Route path="/" element={<Landing />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/chatroom" element={<Chatroom />}/>
                 </Routes>
             </HashRouter>
         </div>
