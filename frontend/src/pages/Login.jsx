@@ -51,9 +51,11 @@ const Login = () => {
                 }),
             })
             .then(response => response.json())
-            .then(data => setLoginStatus(""))
+            .then(data => {
+                setLoginStatus("");
+                sessionStorage.setItem("token", data.token);
+            })
             .catch(error => setLoginStatus(error));
-            
         } catch (error) {
             setLoginStatus(error);
         }
