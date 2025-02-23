@@ -50,7 +50,9 @@ const Login = () => {
                 }),
             })
             .then(response => response.json())
-            .then(data => console.log("Success: ", data))
+            .then(data => {
+                sessionStorage.setItem("token", data.token);
+            })
             .catch(error => console.error("Error:", error));
             
         } catch (error) {

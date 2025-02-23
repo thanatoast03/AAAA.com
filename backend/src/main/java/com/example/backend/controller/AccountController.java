@@ -6,8 +6,11 @@ import com.example.backend.service.AccountService;
 import com.example.backend.service.ReCAPTCHAService;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,70 +24,65 @@ public class AccountController {
     @Autowired
     private ReCAPTCHAService recaptchaService;
 
+    @Value("${spring.profiles.active}") 
+    private String activeProfile;
+
     @PostMapping("/register")
-    public HashMap<String, String> registerAccount(@Validated @RequestBody RegisterRequest request, BindingResult bindingResult) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("success", "false");
+    public ResponseEntity<Map<String, String>> registerAccount(@Validated @RequestBody RegisterRequest request, BindingResult bindingResult) {
+        Map<String, String> response = new HashMap<>();
 
         try {
-            // any binding errors from field input errors/attack attempts
             if (bindingResult.hasErrors()) {
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
-            // password match check
             if (!request.getPassword().equals(request.getConfirmPassword())) {
                 throw new Exception("Passwords do not match");
             }
 
-            // reCAPTCHA verification
             if (!recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
                 throw new Exception("reCAPTCHA verification failed");
             }
 
-            try {
-                accountService.saveAccount(request);
-                map.put("success", "true");
-                System.out.println("Successfully registered account");
-            } catch (RuntimeException e) {
-                map.put("reason", e.getMessage());   
-            }
+            accountService.saveAccount(request);
+            response.put("success", "true");
+            response.put("message", "Registration successful");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            map.put("reason", e.getMessage());
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-
-        return map;
     }
 
     @PostMapping("/login")
-    public HashMap<String, String> login(@Validated @RequestBody LoginRequest request, BindingResult bindingResult) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("success", "false");
+    public ResponseEntity<Map<String, String>> login(@Validated @RequestBody LoginRequest request, BindingResult bindingResult) {
+        Map<String, String> response = new HashMap<>();
 
         try {
-            // any binding errors from field input errors/attack attempts
-            if (bindingResult.hasErrors()) {
+            if (bindingResult.hasErrors()) { // if it does not fit DTO object
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
-            // reCAPTCHA verification
-            if (!recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
+            // reCAPTCHA verification in dev mode
+            if (!"dev".equals(activeProfile) && !recaptchaService.verifyRecaptcha(request.getRecaptchaToken())) {
                 throw new Exception("reCAPTCHA verification failed");
             }
 
-            try {
-                accountService.loginAccount(request);
-                map.put("success", "true");
-                System.out.println("Successfully logged into account");
-            } catch (RuntimeException e) {
-                map.put("reason", e.getMessage());   
-            }
+            // get JWT token when logging in
+            String token = accountService.loginAccount(request);
+            
+            response.put("success", "true");
+            response.put("message", "Login successful");
+            response.put("token", token);  // return JWT token
+            
+            return ResponseEntity.ok(response);
 
-        } catch (Exception e) { 
-            map.put("reason", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-
-        return map;
     }
 }
