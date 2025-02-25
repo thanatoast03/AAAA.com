@@ -1,0 +1,43 @@
+.admin-panel {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .section {
+    background-color: #5A5A5A;
+    padding: 15px;
+    width: 30%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    color: #FFFF;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  li {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  @media (max-width: 768px) {
+    .admin-panel {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .section {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  }
