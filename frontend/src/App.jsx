@@ -20,10 +20,17 @@ function Layout() {
 function ProtectedRoute() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        console.log("Current token:", token);
+        // rest of your code...
+    }, []);
     
     useEffect(() => {
         const verifyToken = async() => {
             try{
+                console.log("Attempting to verify", sessionStorage.getItem("token"))
                 const response = await fetch("/verify", {
                     method: "GET",
                     headers: {
@@ -31,13 +38,18 @@ function ProtectedRoute() {
                         "Content-Type" : "application/json"
                     }
                 });
+
+                console.log("Response status: ", response.status);
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("Success");
                     setIsAuthenticated(true);
                 } else {
+                    console.log("Failed");
                     setIsAuthenticated(false);
                 }
             } catch (error){
+                console.log("Failed: ", error)
                 setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);
