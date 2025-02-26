@@ -2,6 +2,7 @@ import { React, useState, useEffect, useRef} from "react";
 import './chatroom.css';
 import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
+import trashIcon from '../assets/graphics/trashIcon.png';
 
 const Chatroom = () => {
 
@@ -20,7 +21,7 @@ const Chatroom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // useEffect(() => {
+    // useEffect(() => { //* sample data use effect/
     //     //getMessages(); //gets messages for current user
     //     // const sampleData = ["cpapa","braindoko","nimi nightmare"]
     //     // setOnlineList(sampleData);
@@ -62,7 +63,10 @@ const Chatroom = () => {
                             <div key={index} className="message">
                                 <div className="messageHeader">
                                     <span className="messageName">{message.name}</span>
-                                    <span className="messageTime">{message.time}</span>
+                                    <div className="timeDeleteFlag">
+                                        <span className="messageTime">{message.time}</span>
+                                        <img src={trashIcon}/>
+                                    </div>
                                 </div>
                                 <p>{message.text}</p>
                             </div>
