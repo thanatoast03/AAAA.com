@@ -60,10 +60,10 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            if (response.ok){
+            if (response.success){
                 navLog();
             } else {
-                console.log(response)
+                setRegisterStatus(response.message);
             }
             
         } catch (error) {
