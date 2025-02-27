@@ -24,11 +24,10 @@ function ProtectedRoute() {
     useEffect(() => {
         const verifyToken = async() => {
             try{
-                const response = await fetch("/verify", {
+                const response = await fetch("/api/verify", {
                     method: "GET",
                     headers: {
-                        "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
-                        "Content-Type" : "application/json"
+                        "Authorization" : `Bearer ${sessionStorage.getItem("token")}`
                     }
                 });
 
