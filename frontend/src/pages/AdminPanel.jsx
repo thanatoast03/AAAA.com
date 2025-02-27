@@ -15,7 +15,16 @@ const AdminPanel = () => {
       <div className="section">
         <h2>Sensitive Info Changes:</h2>
       </div>
+      <div className="delete-account" >
+        <div className="delete-input-container">
+          <input
+            type="text"
+            placeholder="Type username here..."
+          />
+          <button className="delete-button">Delete Account</button>
     </div>
+</div>
+</div>
   );
 };
 
