@@ -62,7 +62,7 @@ const Login = () => {
                 sessionStorage.setItem("token", data.token);
                 navLogin();
             })
-            .catch(error => setLoginStatus(error));
+            .catch(error => setLoginStatus(response.message));
         } catch (error) {
             setLoginStatus(error);
         }
