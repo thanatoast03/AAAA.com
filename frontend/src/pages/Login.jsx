@@ -44,7 +44,6 @@ const Login = () => {
 
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
-    
             const response = await fetch("/api/accounts/login", {
                 method: "POST",
                 headers: {
@@ -55,16 +54,19 @@ const Login = () => {
                     "password": password,
                     "recaptchaToken": token
                 }),
-            })
-            .then(response => response.json())
-            .then(data => {
+            });
+
+            const responseJson = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseJson.message || "login failed");
+            } else {
                 setLoginStatus("");
-                sessionStorage.setItem("token", data.token);
+                sessionStorage.setItem("token", responseJson.token);
                 navLogin();
-            })
-            .catch(error => setLoginStatus(error));
+            }
         } catch (error) {
-            setLoginStatus(error);
+            setLoginStatus(error.message);
         }
     };
 
