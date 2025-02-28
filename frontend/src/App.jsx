@@ -24,13 +24,12 @@ function ProtectedRoute() {
     useEffect(() => {
         const verifyToken = async() => {
             try{
-                const response = await fetch("/api/verify", {
+                const response = await fetch("/api/verify/", {
                     method: "GET",
                     headers: {
                         "Authorization" : `Bearer ${sessionStorage.getItem("token")}`
                     }
                 });
-
                 if (response.ok) {
                     setIsAuthenticated(true);
                 } else {
