@@ -1,9 +1,16 @@
-import { React, useState, useEffect} from "react";
+import { React, useState, useEffect } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loginStatus, setLoginStatus] = useState("");
+    const navigate = useNavigate();
+
+    const navLogin = () => {
+        navigate("/chatroom");
+    }
 
     useEffect (() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -37,7 +44,6 @@ const Login = () => {
 
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
-    
             const response = await fetch("/api/accounts/login", {
                 method: "POST",
                 headers: {
@@ -48,13 +54,19 @@ const Login = () => {
                     "password": password,
                     "recaptchaToken": token
                 }),
-            })
-            .then(response => response.json())
-            .then(data => console.log("Success: ", data))
-            .catch(error => console.error("Error:", error));
-            
+            });
+
+            const responseJson = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseJson.message || "login failed");
+            } else {
+                setLoginStatus("");
+                sessionStorage.setItem("token", responseJson.token);
+                navLogin();
+            }
         } catch (error) {
-            console.error("Error: ", error);
+            setLoginStatus(error.message);
         }
     };
 
@@ -69,6 +81,7 @@ const Login = () => {
                     <form method="POST" className="flex flex-col" onSubmit={handleSubmit} >
                         <input type="text" placeholder="Email" className="border border-gray-600 p-2 rounded w-full text-white placeholder-gray-400 mb-5 bg-[#443F3F]" onChange={(e) => setEmail(e.target.value)} maxLength="320"/>
                         <input type="password" placeholder="Password" className="border border-gray-600 p-2 rounded w-full text-white placeholder-gray-400 mb-10 bg-[#443F3F]" onChange={(e) => setPassword(e.target.value)} maxLength="128"/>
+                        <p className="text-[#FF0000] mb-2 max-w-screen-sm">{loginStatus}</p>
                         <button type="submit" className="w-1/2 text-white p-2 rounded bg-[#1AC472]">Login</button>
                     </form>
                 </div>

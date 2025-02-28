@@ -1,11 +1,14 @@
-import { React, useState, useEffect} from "react";
+import { React, useState, useEffect } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [registerStatus, setRegisterStatus] = useState("");
+    const navigate = useNavigate();
     
     useEffect(() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -28,6 +31,10 @@ const Register = () => {
             document.querySelectorAll(".grecaptcha-badge, [src*='recaptcha/api.js']").forEach((el) => el.remove());
         }
     }, []);
+
+    const navLog = () => {
+        navigate("/login");
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -53,12 +60,14 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            .then(response => response.json())
-            .then(data => console.log("Success: ", data))
-            .catch(error => console.error("Error:", error));
+            if (response.success){
+                navLog();
+            } else {
+                setRegisterStatus(response.message);
+            }
             
         } catch (error) {
-            console.error("Error: ", error);
+            setRegisterStatus(error);
         }
     };
 
@@ -75,6 +84,7 @@ const Register = () => {
                         <input type="text" placeholder="Email" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setEmail(e.target.value)} maxLength="320"/>
                         <input type="password" placeholder="Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-5 bg-[#443F3F]"onChange={(e) => setPassword(e.target.value)} maxLength="128"/>
                         <input type="password" placeholder="Confirm Password" className="border border-gray-600 p-2 rounded text-white placeholder-gray-400 mb-10 bg-[#443F3F]"onChange={(e) => setConfirmPassword(e.target.value)} maxLength="128"/>
+                        <p className="text-[#FF0000] mb-2 max-w-screen-sm">{registerStatus}</p>
                         <button type="submit" className="w-2/3 text-white p-2 rounded font-casual bg-[#1AC472]">Register</button>
                     </form>
                     
