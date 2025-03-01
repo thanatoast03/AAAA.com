@@ -44,7 +44,7 @@ const Login = () => {
 
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
-            const response = await fetch("/api/accounts/login", {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
