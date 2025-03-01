@@ -89,13 +89,12 @@ public class AccountService implements UserDetailsService {
     }
 
     public void changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //jwt token
-        String oldUsername = authentication.getName(); //get old username from jwt token
+        String oldUsername = getLoggedInUser().getUsername(); //get old username
         String newUsername = usernameRequest.getNewUsername(); //get new username from request
 
         Account currentUser = accountRepository.findByUsername(oldUsername).orElseThrow(() -> new Exception("User not found"));
 
-        if (accountRepository.existsByUsername(newUsername) && !newUsername.equals(oldUsername)) {
+        if (accountRepository.existsByUsername(newUsername) || newUsername.equals(oldUsername)) {
             throw new Exception("Username is already in use.");
         }
 

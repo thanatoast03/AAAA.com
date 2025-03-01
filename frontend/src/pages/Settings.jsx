@@ -6,6 +6,7 @@ import DeleteAccountModal from "../modals/DeleteAccountModal";
 const Settings = () => {
     const [deleteOpen,setDeleteOpen] = useState(false);
     const [newUsername,setNewUsername] = useState("");
+    const [changeStatus,setChangeStatus] = useState("");
 
 
     const openDeleteModal = () => {
@@ -17,18 +18,19 @@ const Settings = () => {
     }
 
     const changeUsername = async() => {
-        console.log("changing username");
         try{
-            const response = fetch(process.env.REACT_APP_ACCOUNTS_PATH+"/changeUsername", {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH+"/changeUsername", {
                 method: "POST",
                 headers: {
-                    "Authorization" : `Bearer ${sessionStorage.getItem("token")}`
+                    "Content-Type" : "application/json",
+                    "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
                 },
                 body: JSON.stringify({
                     "newUsername" : newUsername,
                 }),
             });
-            setChangeStatus(response.message);
+            const data = await response.json();
+            setChangeStatus(data.message);
         } catch (error) {
             setChangeStatus(error.message);
         }
@@ -51,7 +53,7 @@ const Settings = () => {
                     <div className="accountPanel">
                         <div className="accountOption">
                             <h1>Username:</h1>
-                            <input type="text" placeholder="username" onChange={handleUserChange()}/>
+                            <input type="text" placeholder="username" onChange={handleUserChange}/>
                         </div>
                         <div className="accountOption">
                             <h1>Password:</h1>
@@ -62,6 +64,7 @@ const Settings = () => {
                             <input type="text" placeholder="email"/>
                         </div>
                         <button className="settingsSave" onClick={() => changeUsername()}>Save Changes</button>
+                        <p className="text-[#00FF00]">{changeStatus}</p>
                         <button className="settingsDelete" onClick={() => openDeleteModal()}>DELETE ACCOUNT</button>
                     </div>
                 </div>
