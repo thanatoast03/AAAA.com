@@ -1,6 +1,7 @@
 package com.example.backend.service;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
+import com.example.backend.DTO.ChangeUsernameRequest;
 import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
@@ -85,6 +86,21 @@ public class AccountService implements UserDetailsService {
         extraClaims.put("role", account.getRole());
 
         return jwtUtils.generateToken(extraClaims, email, 86400000);
+    }
+
+    public void changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //jwt token
+        String oldUsername = authentication.getName(); //get old username from jwt token
+        String newUsername = usernameRequest.getNewUsername(); //get new username from request
+
+        Account currentUser = accountRepository.findByUsername(oldUsername).orElseThrow(() -> new Exception("User not found"));
+
+        if (accountRepository.existsByUsername(newUsername) && !newUsername.equals(oldUsername)) {
+            throw new Exception("Username is already in use.");
+        }
+
+        currentUser.setUsername(newUsername);
+        accountRepository.save(currentUser);
     }
 
     @Override

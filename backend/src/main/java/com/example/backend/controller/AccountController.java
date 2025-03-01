@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.DTO.ChangeUsernameRequest;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.service.AccountService;
@@ -83,6 +84,28 @@ public class AccountController {
             response.put("success", "false");
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/changeUsername")
+    public ResponseEntity<Map<String,String>> changeUsername(@Validated @RequestBody ChangeUsernameRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if username request is a valid username request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            accountService.changeUsername(request); //pass request on to AccountService
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Username successfully changed");
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
         }
     }
 }

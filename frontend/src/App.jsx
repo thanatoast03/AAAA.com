@@ -24,7 +24,7 @@ function ProtectedRoute() {
     useEffect(() => {
         const verifyToken = async() => {
             try{
-                const response = await fetch("/api/verify/", {
+                const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/verify/", {
                     method: "GET",
                     headers: {
                         "Authorization" : `Bearer ${sessionStorage.getItem("token")}`
