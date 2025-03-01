@@ -59,9 +59,7 @@ const Register = () => {
             if (response.ok){
                 navigate("/login");
             } else {
-                console.log("response not ok");
                 const data = await response.json();
-                console.log(data);
                 setRegisterStatus(data.message);
             }
             
