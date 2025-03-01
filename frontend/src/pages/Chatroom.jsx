@@ -45,9 +45,11 @@ const ChatComponent = () => {
         // todo: handle message logic here; handle deletes and sends
         const payloadData = JSON.parse(message.body);
         console.log("received message:", payloadData);
-        setMessageList((prevMessages) => [...prevMessages, payloadData]);
-        setHasMessages(true);
-        scrollToBottom();
+        if (payloadData.success) { //! ONLY FOR SENDS RIGHT NOW. CHECK ACTION LATER
+            setMessageList((prevMessages) => [...prevMessages, payloadData.message]);
+            setHasMessages(true);
+            scrollToBottom();
+        }
     });
 
     // message logic
@@ -74,7 +76,7 @@ const ChatComponent = () => {
 
         stompClient.publish({
             destination: "/chat/message",
-            body: JSON.stringify({ content: message, action: "send" }),
+            body: JSON.stringify({ content: message, action: "send", token: sessionStorage.getItem("token") }),
         });
 
         setMessage(""); // clear after sending

@@ -61,9 +61,9 @@ public class AccountService implements UserDetailsService {
             .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
         // try to authenticate
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, loginRequest.getPassword())
-        );
+        ); //! SUPER IMPORTANT; THROWS ERROR IF CREDENTIALS ARE INCORRECT
 
         // create AuthenticatedUser and set authorities
         Set<GrantedAuthority> authorities = new HashSet<>();
