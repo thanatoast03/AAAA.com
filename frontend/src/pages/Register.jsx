@@ -32,10 +32,6 @@ const Register = () => {
         }
     }, []);
 
-    const navLog = () => {
-        navigate("/login");
-    }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -47,7 +43,7 @@ const Register = () => {
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
     
-            const response = await fetch("/api/accounts/register", {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -60,14 +56,15 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            if (response.success){
-                navLog();
+            if (response.ok){
+                navigate("/login");
             } else {
-                setRegisterStatus(response.message);
+                const data = await response.json();
+                setRegisterStatus(data.message);
             }
             
         } catch (error) {
-            setRegisterStatus(error);
+            setRegisterStatus(error.message);
         }
     };
 
