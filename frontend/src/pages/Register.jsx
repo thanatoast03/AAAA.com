@@ -1,5 +1,6 @@
-import { React, useState, useEffect, useNavigate } from "react";
+import { React, useState, useEffect } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -7,6 +8,7 @@ const Register = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [registerStatus, setRegisterStatus] = useState("");
+    const navigate = useNavigate();
     
     useEffect(() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -31,7 +33,7 @@ const Register = () => {
     }, []);
 
     const navLog = () => {
-        useNavigate("/login")
+        navigate("/login");
     }
 
     const handleSubmit = async (e) => {
@@ -58,10 +60,11 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            .then(response => response.json())
-            .then(data => setRegisterStatus(""))
-            .then(navLog())
-            .catch(error => setRegisterStatus("error: "+error));
+            if (response.success){
+                navLog();
+            } else {
+                setRegisterStatus(response.message);
+            }
             
         } catch (error) {
             setRegisterStatus(error);

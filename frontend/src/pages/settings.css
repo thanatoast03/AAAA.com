@@ -48,7 +48,7 @@
     width: 18%;
     border-radius: 4px;
     color: white;
-    font-family: font-casual;
+    font-family: 'Kadwa',serif;
     font-size: 200%;
     margin-top: 14%;
     margin-right: 20%;
@@ -88,4 +88,5 @@
     background-color: #9C1A10;
     padding: 1%;
     border-radius: 4px;
+    font-family: 'Kadwa',serif;
 }

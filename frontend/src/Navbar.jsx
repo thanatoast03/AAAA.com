@@ -10,7 +10,15 @@ const Navbar = () => {
     };
 
     const navigateLogin = () => {
-        navigate("/login")
+        navigate("/login");
+    }
+
+    const navigateSettings = () => {
+        navigate("/settings");
+    }
+
+    const navigateChatroom = () => {
+        navigate("/chatroom")
     }
 
     const navigateLanding = () => {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { React, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import './index.css';  // import tailwind css file
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -17,6 +17,40 @@ function Layout() {
     );
 }
 
+function ProtectedRoute() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    useEffect(() => {
+        const verifyToken = async() => {
+            try{
+                const response = await fetch("/api/verify/", {
+                    method: "GET",
+                    headers: {
+                        "Authorization" : `Bearer ${sessionStorage.getItem("token")}`
+                    }
+                });
+                if (response.ok) {
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
+                }
+            } catch (error){
+                setIsAuthenticated(false);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        verifyToken();
+    },[]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-full">Loading...</div>
+    }
+
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+}
+
 function App() {
     return (
         <div className='h-screen max-h-screen flex flex-col bg-[#353535]'>
@@ -26,8 +60,10 @@ function App() {
                         <Route index element={<Landing /> } />
                         <Route path="register" element={<Register />} />
                         <Route path="login" element={<Login />} />
-                        <Route path="chatroom" element={<Chatroom />}/>
-                        <Route path="settings" element={<Settings />}/>
+                        <Route element={<ProtectedRoute />}>
+                            <Route path="chatroom" element={<Chatroom />}/>
+                            <Route path="settings" element={<Settings />}/>
+                        </Route>
                     </Route>
                 </Routes>
             </BrowserRouter>
