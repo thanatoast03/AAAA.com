@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class MessageService {
@@ -26,14 +27,15 @@ public class MessageService {
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
-        if (message.getAction().equals("send")) {
-            return handleSendMessage(message, principal);
-        } else if (message.getAction().equals("delete")) {
-            return handleDeleteMessage(message, principal);
-        } else if (message.getAction().equals("report")) {
-            return handleReportMessage(message, principal);
-        } else {
-            throw new Exception("invalid message request");
+        switch (message.getAction()) {
+            case "send":
+                return handleSendMessage(message, principal);
+            case "delete":
+                return handleDeleteMessage(message, principal);
+            case "report":
+                return handleReportMessage(message, principal);
+            default:
+                throw new Exception("Invalid message request");
         }
     }
 
@@ -61,7 +63,7 @@ public class MessageService {
         String text = Encode.forHtml(message.getContent());
         savedMessage.setText(text);
 
-        messageRepository.saveAndFlush(savedMessage);
+        Message dbMessage = messageRepository.saveAndFlush(savedMessage);
 
         // return logic
         // ! we will have to do something about images in the future
@@ -69,13 +71,40 @@ public class MessageService {
         response.put("text", text);
         response.put("name", username);
         response.put("time", dateString);
+        response.put("id", dbMessage.getId().toString());
 
         return response;
     }
 
     private Map<String, String> handleDeleteMessage(MessageRequest message, Principal principal) {
-        // todo: not implemented
-        return null;
+        Map<String, String> response = new HashMap<>();
+
+        try {
+            Long id = Long.parseLong(message.getContent());
+            System.out.println("succeeded in parsing id");
+
+            // essentially, if person requesting the deletion is the same person who created message, they can delete
+            accountRepository.findByUsername(principal.getName()) // search for principal in account DB
+                .ifPresent(account -> { // if principal found
+                    System.out.println("found account of requester");
+                    messageRepository.findById(id).ifPresent(m -> { // find message by ID
+                        System.out.println("found message by id");
+                        if (m.getSender().getId().equals(account.getId())) { // if the sender is the person who created the message
+                            System.out.println("the sender was the same as the requester");
+                            Long idDeleted = m.getId();
+                            messageRepository.delete(m); // they can delete the message
+                            System.out.println("successfully deleted message");
+                            response.put("id", idDeleted.toString()); //! let clients know which was deleted
+                        }
+                    });
+                }
+            );
+
+        } catch (NumberFormatException e) {
+            System.err.println("someone tried putting a non-id for deleting a message");
+        }
+
+        return response;
     }
 
     private Map<String, String> handleReportMessage(MessageRequest message, Principal principal) {

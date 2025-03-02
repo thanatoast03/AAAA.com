@@ -26,7 +26,7 @@ public class WebSocketController {
 
     @MessageMapping("/message")
     @SendTo("/topic/chat")
-    public Map<String, Object> sendMessage(@Validated @Payload MessageRequest message, Principal principal) {
+    public Map<String, Object> handleMessage(@Validated @Payload MessageRequest message, Principal principal) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -36,6 +36,11 @@ public class WebSocketController {
             }
 
             Map<String, String> savedMessage = messageService.handleMessage(message, principal);
+
+            if (savedMessage.isEmpty()) {
+                throw new Exception("failed to execute message request");
+            }
+
             response.put("action", message.getAction()); // if it got here, that means that it was a valid action
             response.put("success", "true");
             response.put("message", savedMessage);

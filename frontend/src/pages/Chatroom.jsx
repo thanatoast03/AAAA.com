@@ -49,13 +49,25 @@ const ChatComponent = () => {
     const stompClient = useStompClient();
 
     useSubscription("/topic/chat", (message) => {
-        // todo: handle message logic here; handle deletes and sends
         const payloadData = JSON.parse(message.body);
         console.log("received message:", payloadData);
         if (payloadData.success) { //! ONLY FOR SENDS RIGHT NOW. CHECK ACTION LATER
-            setMessageList((prevMessages) => [...prevMessages, payloadData.message]);
-            setHasMessages(true);
-            scrollToBottom();
+            switch (payloadData.action) {
+                case "send":
+                    setMessageList((prevMessages) => [...prevMessages, payloadData.message]);
+                    setHasMessages(true);
+                    scrollToBottom();
+                    break;
+                case "delete":
+                    console.log(messageList);
+                    setMessageList((prevMessages) => prevMessages.filter(message => message.id !== payloadData.message.id));
+                    scrollToBottom();
+                    break;
+                case "report":
+                    //something
+                    break;
+            }
+
         }
     });
 
@@ -75,6 +87,7 @@ const ChatComponent = () => {
     const getMessageHistory = (message) => {
         // http request
         // function that will get initial message history
+
     }
 
     const sendMessage = (e) => {
@@ -92,6 +105,20 @@ const ChatComponent = () => {
         setMessage(""); // clear after sending
     };
 
+    const deleteMessage = (e) => {
+        e.preventDefault();
+        const id = e.target.id;
+        if (!stompClient) {
+            console.log("STOMP client not connected");
+            return;
+        }
+
+        stompClient.publish({
+            destination: "/chat/message",
+            body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
+        });
+    }
+
     if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
 
     return (
@@ -106,7 +133,7 @@ const ChatComponent = () => {
                                     <span className="messageName">{message.name}</span>
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
-                                        <img src={trashIcon} alt="Delete"/>
+                                        <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
