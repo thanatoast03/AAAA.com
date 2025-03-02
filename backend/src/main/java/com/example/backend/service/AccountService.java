@@ -3,6 +3,7 @@ import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.DTO.ChangeUsernameRequest;
 import com.example.backend.DTO.ChangeEmailRequest;
+import com.example.backend.DTO.ChangePasswordRequest;
 import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
@@ -131,6 +132,16 @@ public class AccountService implements UserDetailsService {
         extraClaims.put("role", currentUser.getRole());
 
         return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+    }
+
+    public void changePassword(ChangePasswordRequest passwordRequest) throws Exception{
+        String email = getLoggedInUser().getEmail(); //get email for password change
+        String newPassword = passwordRequest.getNewPassword(); //get new password from request
+
+        Account currentUser = accountRepository.findByEmail(email).orElseThrow(() -> new Exception("User not found"));
+
+        currentUser.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(currentUser);
     }
 
     @Override

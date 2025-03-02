@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.DTO.ChangeUsernameRequest;
 import com.example.backend.DTO.ChangeEmailRequest;
+import com.example.backend.DTO.ChangePasswordRequest;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.service.AccountService;
@@ -116,7 +117,7 @@ public class AccountController {
         Map<String,String> response = new HashMap<>();
 
         try{
-            if (bindingResult.hasErrors()){ //check if username request is a valid email request
+            if (bindingResult.hasErrors()){ //check if email request is a valid email request
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
@@ -125,6 +126,28 @@ public class AccountController {
             response.put("success","true"); //create response to be returned
             response.put("message","Email successfully changed");
             response.put("token",token);
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<Map<String,String>> changePassword(@Validated @RequestBody ChangePasswordRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if password request is a valid password request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            accountService.changePassword(request); //pass request on to AccountService, get token on successful change
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Password successfully changed");
 
             return ResponseEntity.ok(response); //return response object
         } catch (Exception e) {
