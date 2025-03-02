@@ -123,12 +123,12 @@ const Settings = () => {
                         <p className="text-[#00FF00]">{changeUsernameStatus}</p>
                         <div className="accountOption">
                             <h1>Password:</h1>
-                            <input type="text" placeholder="password"/>
+                            <input type="text" placeholder="password" onChange={handlePasswordChange}/>
                         </div>
                         <p className="text-[#00FF00]">{changePasswordStatus}</p>
                         <div className="accountOption">
                             <h1>Email:</h1>
-                            <input type="text" placeholder="email"/>
+                            <input type="text" placeholder="email" onChange={handleEmailChange}/>
                         </div>
                         <p className="text-[#00FF00]">{changeEmailStatus}</p>
                         <button className="settingsSave" onClick={() => changeSensitiveInfo()}>Save Changes</button>

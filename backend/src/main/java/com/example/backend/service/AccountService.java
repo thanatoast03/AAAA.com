@@ -2,6 +2,7 @@ package com.example.backend.service;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.DTO.ChangeUsernameRequest;
+import com.example.backend.DTO.ChangeEmailRequest;
 import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
@@ -59,7 +60,7 @@ public class AccountService implements UserDetailsService {
     public String loginAccount(LoginRequest loginRequest) {
         String email = loginRequest.getEmail().toLowerCase().trim();
         Account account = accountRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // try to authenticate
         Authentication authentication = authenticationManager.authenticate(
@@ -88,7 +89,7 @@ public class AccountService implements UserDetailsService {
         return jwtUtils.generateToken(extraClaims, email, 86400000);
     }
 
-    public void changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
+    public String changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
         String oldUsername = getLoggedInUser().getUsername(); //get old username
         String newUsername = usernameRequest.getNewUsername(); //get new username from request
 
@@ -100,6 +101,36 @@ public class AccountService implements UserDetailsService {
 
         currentUser.setUsername(newUsername);
         accountRepository.save(currentUser);
+
+        // generate token with extra claims
+        Map<String, String> extraClaims = new HashMap<>();
+        extraClaims.put("id", currentUser.getId().toString());
+        extraClaims.put("username", currentUser.getUsername());
+        extraClaims.put("role", currentUser.getRole());
+
+        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+    }
+
+    public String changeEmail(ChangeEmailRequest emailRequest) throws Exception{
+        String oldEmail = getLoggedInUser().getEmail(); //get old email for email change
+        String newEmail = emailRequest.getNewEmail(); //get new email from request
+
+        Account currentUser = accountRepository.findByEmail(oldEmail).orElseThrow(() -> new Exception("User not found"));
+
+        if (accountRepository.existsByEmail(newEmail) || newEmail.equals(oldEmail)) {
+            throw new Exception("Email is already in use.");
+        }
+
+        currentUser.setEmail(newEmail);
+        accountRepository.save(currentUser);
+
+        // generate token with extra claims
+        Map<String, String> extraClaims = new HashMap<>();
+        extraClaims.put("id", currentUser.getId().toString());
+        extraClaims.put("username", currentUser.getUsername());
+        extraClaims.put("role", currentUser.getRole());
+
+        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
     }
 
     @Override

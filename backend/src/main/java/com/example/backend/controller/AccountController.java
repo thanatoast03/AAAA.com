@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.DTO.ChangeUsernameRequest;
+import com.example.backend.DTO.ChangeEmailRequest;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.service.AccountService;
@@ -100,6 +101,28 @@ public class AccountController {
 
             response.put("success","true"); //create response to be returned
             response.put("message","Username successfully changed");
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/changeEmail")
+    public ResponseEntity<Map<String,String>> changeEmail(@Validated @RequestBody ChangeEmailRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if username request is a valid email request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            accountService.changeEmail(request); //pass request on to AccountService
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Email successfully changed");
 
             return ResponseEntity.ok(response); //return response object
         } catch (Exception e) {
