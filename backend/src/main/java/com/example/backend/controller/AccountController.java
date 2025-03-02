@@ -97,10 +97,11 @@ public class AccountController {
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
-            accountService.changeUsername(request); //pass request on to AccountService
+            String token = accountService.changeUsername(request); //pass request on to AccountService, get token on successful change
 
             response.put("success","true"); //create response to be returned
             response.put("message","Username successfully changed");
+            response.put("token",token);
 
             return ResponseEntity.ok(response); //return response object
         } catch (Exception e) {
@@ -119,10 +120,11 @@ public class AccountController {
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
-            accountService.changeEmail(request); //pass request on to AccountService
+            String token = accountService.changeEmail(request); //pass request on to AccountService, get token on successful change
 
             response.put("success","true"); //create response to be returned
             response.put("message","Email successfully changed");
+            response.put("token",token);
 
             return ResponseEntity.ok(response); //return response object
         } catch (Exception e) {

@@ -46,8 +46,13 @@ const Settings = () => {
                 }),
             });
             const data = await response.json();
-            setChangeUsernameStatus(data.message);
-            setNewUsername("");
+            if(data.success === "false") {
+                setChangeUsernameStatus(data.message);
+            } else {
+                setNewUsername("");
+                //sessionStorage.setItem("token",data.token); //! this may be breaking things GUH
+                setChangeUsernameStatus(data.message);
+            }
         } catch (error) {
             setChangeUsernameStatus(error.message);
         }
@@ -66,8 +71,13 @@ const Settings = () => {
                 }),
             });
             const data = await response.json();
-            setChangeEmailStatus(data.message);
-            setNewEmail("");
+            if(data.success === "false"){
+                setChangeUsernameStatus(data.message);
+            } else {
+                setNewEmail("");
+                //sessionStorage.setItem("token",data.token); //! this might be breaking things :NimiAgony:
+                setChangeEmailStatus(data.message);
+            }
         } catch (error) {
             setChangeEmailStatus(error.message);
         }
