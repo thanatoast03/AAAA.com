@@ -50,7 +50,7 @@ const Settings = () => {
                 setChangeUsernameStatus(data.message);
             } else {
                 setNewUsername("");
-                //sessionStorage.setItem("token",data.token); //! this may be breaking things GUH
+                sessionStorage.setItem("token",data.token);
                 setChangeUsernameStatus(data.message);
             }
         } catch (error) {
@@ -75,7 +75,7 @@ const Settings = () => {
                 setChangeUsernameStatus(data.message);
             } else {
                 setNewEmail("");
-                //sessionStorage.setItem("token",data.token); //! this might be breaking things :NimiAgony:
+                sessionStorage.setItem("token",data.token);
                 setChangeEmailStatus(data.message);
             }
         } catch (error) {
