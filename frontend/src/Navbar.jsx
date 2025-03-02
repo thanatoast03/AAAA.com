@@ -32,9 +32,25 @@ const Navbar = () => {
         <nav className="text-white flex justify-between bg-[#202020] text-3xl shadow-xl">
             <h1 className="py-3 px-5 sm:ml-5 hover:cursor-pointer" onClick={() => navigateLanding()}>AAAA</h1>
             <div className="flex flex-row text-2xl px-5 sm:mr-2">
-                <h1 className="p-3 hover:cursor-pointer" onClick={() => handleRegisterClick()}>Register</h1>
-                <h1 className="py-3">|</h1>
-                <h1 className="p-3 hover:cursor-pointer" onClick={() => navigateLogin()}>Login</h1>
+                {location.pathname === '/' && (
+                    <>
+                        <h1 className="p-3 hover:cursor-pointer" onClick={handleRegisterClick}>Register</h1>
+                        <h1 className="py-3">|</h1>
+                        <h1 className="p-3 hover:cursor-pointer" onClick={navigateLogin}>Login</h1>
+                    </>
+                )}
+                {location.pathname === '/register' && (
+                    <h1 className="p-3 hover:cursor-pointer" onClick={navigateLogin}>Login</h1>
+                )}
+                {location.pathname === '/login' && (
+                    <h1 className="p-3 hover:cursor-pointer" onClick={handleRegisterClick}>Register</h1>
+                )}
+                {location.pathname === '/chatroom' && (
+                    <h1 className="p-3 hover:cursor-pointer" onClick={navigateSettings}>Settings</h1>
+                )}
+                {location.pathname === '/settings' && (
+                    <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                )}
             </div>
         </nav>
     );
