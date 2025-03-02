@@ -1,16 +1,80 @@
-import { React, useState, useEffect, useRef} from "react";
+import { React, useState, useEffect, useRef } from "react";
+import { StompSessionProvider, useStompClient, useSubscription } from "react-stomp-hooks";
+import { useNavigate } from "react-router-dom";
 import './chatroom.css';
 import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
+import trashIcon from '../assets/graphics/trashIcon.png';
+
+// safe HTML entity decoder
+const decodeHTMLEntities = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+};
 
 const Chatroom = () => {
+    const navigate = useNavigate();
 
-    const [messageList,setMessageList] = useState([]); //list to hold all messages
-    const [onlineList,setOnlineList] = useState([]); //list of all members who are online
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+        console.error("invalid auth token");
+        navigate("/login");
+    }
+
+    return (
+        <StompSessionProvider
+            url={process.env.REACT_APP_WS_ENDPOINT}
+            connectHeaders={{'Authorization': 'Bearer ' + token }}
+            heartbeatIncoming={4000}
+            heartbeatOutgoing={4000}
+            onConnect={() => console.log("connected to websocket") }
+            onDisconnect={() => console.log("disconnected from websocket")}
+            onStompError={(frame) => console.error("error:", frame)}
+        >
+            <ChatComponent />
+        </StompSessionProvider>
+    )
+}
+
+const ChatComponent = () => {
+    const [messageList, setMessageList] = useState([]); //list to hold all messages
+    const [onlineList, setOnlineList] = useState([]); //list of all members who are online
     const [hasMessages, setHasMessages] = useState(false); //have any messages been sent ever?
-    const [anyOnline,setAnyOnline] = useState(false); //is anyone online?
-
+    const [anyOnline, setAnyOnline] = useState(false); //is anyone online?
+    const [message, setMessage] = useState("");
+    const [connection, setConnection] = useState(null);
+    const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
+    const stompClient = useStompClient();
+
+    useSubscription("/topic/chat", (message) => {
+        const payloadData = JSON.parse(message.body);
+        console.log("received message:", payloadData);
+        if (payloadData.success) { //! ONLY FOR SENDS RIGHT NOW. CHECK ACTION LATER
+            switch (payloadData.action) {
+                case "send":
+                    setMessageList((prevMessages) => [...prevMessages, payloadData.message]);
+                    setHasMessages(true);
+                    scrollToBottom();
+                    break;
+                case "delete":
+                    console.log(messageList);
+                    setMessageList((prevMessages) => prevMessages.filter(message => message.id !== payloadData.message.id));
+                    scrollToBottom();
+                    break;
+                case "report":
+                    //something
+                    break;
+            }
+
+        }
+    });
+
+    // message logic
+    useEffect(() => {
+        setLoading(false);
+    }, []);
 
     useEffect(() => {
         scrollToBottom();
@@ -20,60 +84,69 @@ const Chatroom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // useEffect(() => {
-    //     //getMessages(); //gets messages for current user
-    //     // const sampleData = ["cpapa","braindoko","nimi nightmare"]
-    //     // setOnlineList(sampleData);
-    //     // setAnyOnline(true);
-    //     const sampleData = [
-    //         {"name":"braindoko", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"LALAALALALALALALAALALALALALLALALALALALALALALALALALALALAALLAALLALA :FaunaFlushedDoodle:"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"LALALALALALALALALALAALLAALLALALALALALALALALALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALAALALALAALLAALLALALALALALALALALALALALAALLAALLALA"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:47PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:48PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:49PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:50PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:51PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:52PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:53PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:54PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:55PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:56PM", "text":"scroll"},
-    //         {"name":"cpapa", "pfp":"../assets/graphics/online.png","time":"02/18/25 6:57PM", "text":"scroll"},
-    //     ]
-    //     setMessageList(sampleData);
-    //     setHasMessages(true);
-    // }, [])
-    
-    const getMessages = async() => {
-        //async function that will get messages from the database
+    const getMessageHistory = (message) => {
+        // http request
+        // function that will get initial message history
+
     }
 
-    const sendMessage = async() => {
-        //async function to send message from user
+    const sendMessage = (e) => {
+        e.preventDefault();
+        if (!stompClient) {
+            console.error("STOMP client not connected");
+            return;
+        }
+
+        stompClient.publish({
+            destination: "/chat/message",
+            body: JSON.stringify({ content: message, action: "send", token: sessionStorage.getItem("token") }),
+        });
+
+        setMessage(""); // clear after sending
+    };
+
+    const deleteMessage = (e) => {
+        e.preventDefault();
+        const id = e.target.id;
+        if (!stompClient) {
+            console.log("STOMP client not connected");
+            return;
+        }
+
+        stompClient.publish({
+            destination: "/chat/message",
+            body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
+        });
     }
+
+    if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
 
     return (
         <div className="chatroomContainer">
             <div className="messagePanel">
                 <div className="messageArea">
                     {hasMessages && messageList.map((message,index) => (
-                        <div className="messageContainer">
-                            <img src={online}/>
-                            <div key={index} className="message">
+                        <div className="messageContainer" key={index}>
+                            <img src={online} alt="Online status"/>
+                            <div className="message">
                                 <div className="messageHeader">
                                     <span className="messageName">{message.name}</span>
-                                    <span className="messageTime">{message.time}</span>
+                                    <div className="timeDeleteFlag">
+                                        <span className="messageTime">{message.time}</span>
+                                        <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
+                                    </div>
                                 </div>
-                                <p>{message.text}</p>
+                                {/* decode HTML safely? */}
+                                <p>{decodeHTMLEntities(message.text)}</p>
                             </div>
                         </div>
                     ))}
                     <div ref={messagesEndRef}/>
                 </div>
-                <div className="sendArea">
-                    <input type="text" placeholder="Type message here..."></input>
-                    <button><img src={addImg}/></button>
-                </div>
+                <form className="sendArea" onSubmit={sendMessage}>
+                    <input type="text" placeholder="Type message here..." value={message} onChange={(e) => setMessage(e.target.value)} maxLength="2000" />
+                    <button type="submit"><img src={addImg} alt="Add"/></button>
+                </form>
             </div>
             <div className="memberPanel">
                 <input type="text" placeholder="Search for a member's messages..."></input>
@@ -83,7 +156,7 @@ const Chatroom = () => {
                         onlineList.map((name,index) => (
                             <div key={index} className="memberCell">
                                 <p>{name}</p>
-                                <img src={online}></img>
+                                <img src={online} alt="Online"></img>
                             </div>
                         ))
                     ) : (
@@ -92,7 +165,7 @@ const Chatroom = () => {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default Chatroom;

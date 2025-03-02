@@ -23,7 +23,7 @@ public class JwtUtilService {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(Map<String, String> extraClaims, String email, long expireInterval) {
+    public String generateToken(Map<String, Map<String, String>> extraClaims, String email, long expireInterval) {
         return Jwts
                 .builder()
                 .claims()
