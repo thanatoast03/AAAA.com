@@ -6,6 +6,13 @@ import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
 import trashIcon from '../assets/graphics/trashIcon.png';
 
+// safe HTML entity decoder
+const decodeHTMLEntities = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+};
+
 const Chatroom = () => {
     const navigate = useNavigate();
 
@@ -14,14 +21,14 @@ const Chatroom = () => {
         console.error("invalid auth token");
         navigate("/login");
     }
-    //hello
+
     return (
         <StompSessionProvider
             url={process.env.REACT_APP_WS_ENDPOINT}
             connectHeaders={{'Authorization': 'Bearer ' + token }}
             heartbeatIncoming={4000}
             heartbeatOutgoing={4000}
-            onConnect={() => console.log("connected to websocket")}
+            onConnect={() => console.log("connected to websocket") }
             onDisconnect={() => console.log("disconnected from websocket")}
             onStompError={(frame) => console.error("error:", frame)}
         >
@@ -53,6 +60,9 @@ const ChatComponent = () => {
     });
 
     // message logic
+    useEffect(() => {
+        setLoading(false);
+    }, []);
 
     useEffect(() => {
         scrollToBottom();
@@ -82,24 +92,25 @@ const ChatComponent = () => {
         setMessage(""); // clear after sending
     };
 
-    if (loading) <div className="flex justify-center items-center h-full">Loading...</div>
+    if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
 
     return (
         <div className="chatroomContainer">
             <div className="messagePanel">
                 <div className="messageArea">
                     {hasMessages && messageList.map((message,index) => (
-                        <div className="messageContainer">
-                            <img src={online}/>
-                            <div key={index} className="message">
+                        <div className="messageContainer" key={index}>
+                            <img src={online} alt="Online status"/>
+                            <div className="message">
                                 <div className="messageHeader">
                                     <span className="messageName">{message.name}</span>
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
-                                        <img src={trashIcon}/>
+                                        <img src={trashIcon} alt="Delete"/>
                                     </div>
                                 </div>
-                                <p>{message.text}</p>
+                                {/* decode HTML safely? */}
+                                <p>{decodeHTMLEntities(message.text)}</p>
                             </div>
                         </div>
                     ))}
@@ -107,7 +118,7 @@ const ChatComponent = () => {
                 </div>
                 <form className="sendArea" onSubmit={sendMessage}>
                     <input type="text" placeholder="Type message here..." value={message} onChange={(e) => setMessage(e.target.value)} maxLength="2000" />
-                    <button><img src={addImg}/></button>
+                    <button type="submit"><img src={addImg} alt="Add"/></button>
                 </form>
             </div>
             <div className="memberPanel">
@@ -118,7 +129,7 @@ const ChatComponent = () => {
                         onlineList.map((name,index) => (
                             <div key={index} className="memberCell">
                                 <p>{name}</p>
-                                <img src={online}></img>
+                                <img src={online} alt="Online"></img>
                             </div>
                         ))
                     ) : (
