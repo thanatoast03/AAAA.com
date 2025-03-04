@@ -1,9 +1,12 @@
 package com.example.backend.service;
 
+import com.example.backend.DTO.MessageReportRequest;
 import com.example.backend.DTO.MessageRequest;
 import com.example.backend.model.Account;
+import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
 import com.example.backend.repository.MessageRepository;
+import com.example.backend.repository.ReportedMessageRepository;
 import org.springframework.stereotype.Service;
 import com.example.backend.model.Message;
 import org.owasp.encoder.Encode;
@@ -14,16 +17,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class MessageService {
     private final MessageRepository messageRepository;
     private final AccountRepository accountRepository;
+    private final ReportedMessageRepository reportedMessageRepository;
+    private final AccountService accountService;
 
-    public MessageService(MessageRepository messageRepository, AccountRepository accountRepository) {
+    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository) {
         this.messageRepository = messageRepository;
         this.accountRepository = accountRepository;
+        this.reportedMessageRepository = reportedMessageRepository;
+        this.accountService = accountService;
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
@@ -32,8 +39,6 @@ public class MessageService {
                 return handleSendMessage(message, principal);
             case "delete":
                 return handleDeleteMessage(message, principal);
-            case "report":
-                return handleReportMessage(message, principal);
             default:
                 throw new Exception("Invalid message request");
         }
@@ -107,8 +112,26 @@ public class MessageService {
         return response;
     }
 
-    private Map<String, String> handleReportMessage(MessageRequest message, Principal principal) {
-        // todo: not implemented
-        return null;
+    public void handleReportMessage(MessageReportRequest message) throws Exception {
+        messageRepository.findById(message.getMessageId()).ifPresentOrElse(m -> { // get message by id
+            Account loggedInUser = accountService.getLoggedInUser(); // get logged in user (won't get here if they are not logged in)
+            if (m.getSender().getId().equals(loggedInUser.getId())) {
+                throw new RuntimeException("can't report your own message");
+            } // if it got this far, sender different from reporter
+
+            // check if they have already reported
+            if (reportedMessageRepository.existsByReporterAndMessage(loggedInUser, m)) {
+                throw new RuntimeException("message has already been reported");
+            }
+
+            ReportedMessage reportedMessage = new ReportedMessage();
+            reportedMessage.setMessage(m);
+            reportedMessage.setReporter(loggedInUser);
+            reportedMessage.setCreator(m.getSender());
+
+            reportedMessageRepository.saveAndFlush(reportedMessage);
+        }, () -> { // if it never found the message by id, throw error
+            throw new RuntimeException("couldn't find message with that ID");
+        });
     }
 }
