@@ -43,8 +43,10 @@ const ChatComponent = () => {
     const [hasMessages, setHasMessages] = useState(false); //have any messages been sent ever?
     const [anyOnline, setAnyOnline] = useState(false); //is anyone online?
     const [message, setMessage] = useState("");
-    const [connection, setConnection] = useState(null);
+    const [lastMessageId, setLastMessageId] = useState(null);
+    const [gotAllMessages, setGotAllMessages] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [loadingMessages, setLoadingMessages] = useState(false);
     const messagesEndRef = useRef(null);
     const stompClient = useStompClient();
 
@@ -61,19 +63,18 @@ const ChatComponent = () => {
                 case "delete":
                     console.log(messageList);
                     setMessageList((prevMessages) => prevMessages.filter(message => message.id !== payloadData.message.id));
+                    if (messageList.length > 0) { // check if we should say that it has set messages
+                        setHasMessages(true);
+                    }
                     scrollToBottom();
                     break;
-                case "report":
-                    //something
-                    break;
             }
-
         }
     });
 
     // message logic
     useEffect(() => {
-        setLoading(false);
+        getMessageHistory(); // uncomment when we get it working
     }, []);
 
     useEffect(() => {
@@ -84,12 +85,54 @@ const ChatComponent = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const getMessageHistory = (message) => {
+    const getMessageHistory = async () => {
         // http request
         // function that will get initial message history
+        setLoadingMessages(true);
 
+        try {
+            const last_message = lastMessageId || "";
+
+            const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/messages/history", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + sessionStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    "message_id": last_message
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error("failed to fetch messages");
+            } else {
+                console.log(data);
+                setLastMessageId(data);
+                if (data.length < 100) {
+                    setGotAllMessages(true); // todo: use this flag to hide button and let user know all messages have been retrieved
+                    console.log("got all messages");
+                }
+
+                if (data.length > 0) { // update last message retrieved
+                    setLastMessageId(data[0].id);
+                }
+
+                setMessageList((prevMessages) => [...data, ...prevMessages]); // update message list
+
+                if (messageList.length > 0) { // check if we should say that it has set messages
+                    setHasMessages(true);
+                }
+            }
+        } catch (error) {
+            console.log(error.message); // todo: turn into a status message
+        }
+
+        setLoadingMessages(false);
+        setLoading(false);
     }
-
     const sendMessage = (e) => {
         e.preventDefault();
         if (!stompClient) {
@@ -117,6 +160,36 @@ const ChatComponent = () => {
             destination: "/chat/message",
             body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
         });
+    }
+
+    const reportMessage = async (e) => {
+        e.preventDefault();
+
+        try {
+            const id = e.target.id;
+            const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/messages/report", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + sessionStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    "messageId": id
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message); // message is json field for reason of failure
+            } else {
+                console.log("successfully reported message");
+                // todo: turn into status message
+            }
+        } catch (error) {
+            console.log(error.message);
+            // todo: turn into status message
+        }
     }
 
     if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
