@@ -1,5 +1,6 @@
-import { React, useState, useEffect, useNavigate } from "react";
+import { React, useState, useEffect } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -7,6 +8,7 @@ const Register = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [registerStatus, setRegisterStatus] = useState("");
+    const navigate = useNavigate();
     
     useEffect(() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -30,10 +32,6 @@ const Register = () => {
         }
     }, []);
 
-    const navLog = () => {
-        useNavigate("/login")
-    }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -45,7 +43,7 @@ const Register = () => {
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
     
-            const response = await fetch("/api/accounts/register", {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -58,13 +56,15 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            .then(response => response.json())
-            .then(data => setRegisterStatus(""))
-            .then(navLog())
-            .catch(error => setRegisterStatus("error: "+error));
+            if (response.ok){
+                navigate("/login");
+            } else {
+                const data = await response.json();
+                setRegisterStatus(data.message);
+            }
             
         } catch (error) {
-            setRegisterStatus(error);
+            setRegisterStatus(error.message);
         }
     };
 

@@ -2,6 +2,8 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "accounts")
 public class Account {
@@ -20,6 +22,9 @@ public class Account {
 
     @Column(nullable = false)
     private boolean isAdmin;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Message> messages;
 
     public Long getId() {
         return id;
@@ -51,5 +56,15 @@ public class Account {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getRole() { return isAdmin ? "admin" : "user"; }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 }

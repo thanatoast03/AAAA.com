@@ -2,47 +2,111 @@ package com.example.backend.service;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
 import com.example.backend.model.Account;
+import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
-import java.util.Optional;
 
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+
 @Service
-public class AccountService {
+public class AccountService implements UserDetailsService {
     private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final AccountRepository accountRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtilService jwtUtils;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, @Lazy AuthenticationManager authenticationManager, JwtUtilService jwtUtils) {
         this.accountRepository = accountRepository;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
     }
 
     public Account saveAccount(RegisterRequest registerRequest) {
-        // check if confirm password is same as password
-        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())){ throw new RuntimeException("Password and confirm password do not match"); }
-
-        // check if email/username already exists
-        if (accountRepository.existsByEmail(registerRequest.getEmail())) { throw new RuntimeException("Email already registered!"); }
-        if (accountRepository.existsByUsername(registerRequest.getUsername())) { throw new RuntimeException("Username taken"); }
+        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
+            throw new RuntimeException("Password and confirm password do not match");
+        }
+        if (accountRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new RuntimeException("Email already registered!");
+        }
+        if (accountRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new RuntimeException("Username taken");
+        }
 
         Account account = new Account();
         account.setUsername(registerRequest.getUsername().toLowerCase().trim());
         account.setEmail(registerRequest.getEmail().toLowerCase().trim());
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
-        return accountRepository.save(account); // save to DB
+        return accountRepository.save(account);
     }
 
-    public void loginAccount(LoginRequest loginRequest) {
-        Optional<Account> optionalAccount = accountRepository.findByEmail(loginRequest.getEmail().toLowerCase().trim());
+    public String loginAccount(LoginRequest loginRequest) {
+        String email = loginRequest.getEmail().toLowerCase().trim();
+        Account account = accountRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        // if no account found with matching email
-        if (optionalAccount.isEmpty()) { throw new RuntimeException("Incorrect email/password"); }
+        // try to authenticate
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(email, loginRequest.getPassword())
+        ); //! SUPER IMPORTANT; THROWS ERROR IF CREDENTIALS ARE INCORRECT
+
+        // create AuthenticatedUser and set authorities
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(() -> account.getRole());
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser(account, authorities);
+
+        // use AuthenticatedUser as principal
+        Authentication customAuth = new UsernamePasswordAuthenticationToken(
+            authenticatedUser, 
+            null, 
+            authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(customAuth);
+
+        // generate token with extra claims
+        Map<String, Map<String, String>> extraClaims = new HashMap<>();
+        Map<String, String> claims = new HashMap<>();
+        extraClaims.put("extraClaims", claims);
+        claims.put("id", account.getId().toString());
+        claims.put("username", account.getUsername());
+        claims.put("role", account.getRole());
+
+        return jwtUtils.generateToken(extraClaims, email, 86400000);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException { // get authenticated user object (account and authorities)
+        Account account = accountRepository.findByEmail(email) // find by email
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         
-        Account account = optionalAccount.get(); // if it reaches here, that means there is an account associated
+        Set<GrantedAuthority> authorities = new HashSet<>(); // set authorities
+        authorities.add(() -> account.getRole());
+        
+        return new AuthenticatedUser(account, authorities);
+    }
 
-        // if password does not match DB hash
-        if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) { throw new RuntimeException("Incorrect email/password"); }
+    public Account getLoggedInUser() { // get account associated with user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) authentication.getPrincipal()).getAccount();
+        }
+        
+        return null;
     }
 }

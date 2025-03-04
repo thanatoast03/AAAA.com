@@ -1,10 +1,16 @@
-import { React, useState, useEffect} from "react";
+import { React, useState, useEffect } from "react";
 import messageGraphic from "../assets/graphics/messageGraphic.png";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginStatus, setLoginStatus] = useState("");
+    const navigate = useNavigate();
+
+    const navLogin = () => {
+        navigate("/chatroom");
+    }
 
     useEffect (() => {
         const existingScript = document.querySelector(`script[src="https://www.google.com/recaptcha/api.js?render=${process.env.REACT_APP_SITE_KEY}"]`); // check if script already in html
@@ -38,8 +44,7 @@ const Login = () => {
 
         try {
             const token = await window.grecaptcha.execute(process.env.REACT_APP_SITE_KEY, { action: "submit" });
-    
-            const response = await fetch("/api/accounts/login", {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,13 +54,19 @@ const Login = () => {
                     "password": password,
                     "recaptchaToken": token
                 }),
-            })
-            .then(response => response.json())
-            .then(data => setLoginStatus(""))
-            .catch(error => setLoginStatus(error));
-            
+            });
+
+            const responseJson = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseJson.message || "login failed");
+            } else {
+                setLoginStatus("");
+                sessionStorage.setItem("token", responseJson.token);
+                navLogin();
+            }
         } catch (error) {
-            setLoginStatus(error);
+            setLoginStatus(error.message);
         }
     };
 
