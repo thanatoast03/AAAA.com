@@ -32,10 +32,6 @@ const Register = () => {
         }
     }, []);
 
-    const navLog = () => {
-        navigate("/login");
-    }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -60,14 +56,15 @@ const Register = () => {
                     "recaptchaToken": token
                 }),
             })
-            if (response.success){
-                navLog();
+            if (response.ok){
+                navigate("/login");
             } else {
-                setRegisterStatus(response.message);
+                const data = await response.json();
+                setRegisterStatus(data.message);
             }
             
         } catch (error) {
-            setRegisterStatus(error);
+            setRegisterStatus(error.message);
         }
     };
 
