@@ -1,5 +1,7 @@
 package com.example.backend.service;
 
+import com.example.backend.DTO.MessageDTO;
+import com.example.backend.DTO.MessageHistoryRequest;
 import com.example.backend.DTO.MessageReportRequest;
 import com.example.backend.DTO.MessageRequest;
 import com.example.backend.model.Account;
@@ -7,16 +9,14 @@ import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
 import com.example.backend.repository.MessageRepository;
 import com.example.backend.repository.ReportedMessageRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.example.backend.model.Message;
 import org.owasp.encoder.Encode;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -134,4 +134,15 @@ public class MessageService {
             throw new RuntimeException("couldn't find message with that ID");
         });
     }
+
+    public List<MessageDTO> getMessageHistory(MessageHistoryRequest messageHistoryRequest) {
+        // get the top 100 messages before the id
+        if (messageHistoryRequest.getMessageId() == null) { // if first request, give last 100 messages
+            return messageRepository.findLast100Messages(PageRequest.of(0, 100));
+        } else {
+            return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
+        }
+    }
 }
+
+

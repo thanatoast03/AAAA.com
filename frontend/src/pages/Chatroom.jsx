@@ -45,7 +45,6 @@ const ChatComponent = () => {
     const [message, setMessage] = useState("");
     const [lastMessageId, setLastMessageId] = useState(null);
     const [gotAllMessages, setGotAllMessages] = useState(false);
-    const [connection, setConnection] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const messagesEndRef = useRef(null);
@@ -64,6 +63,9 @@ const ChatComponent = () => {
                 case "delete":
                     console.log(messageList);
                     setMessageList((prevMessages) => prevMessages.filter(message => message.id !== payloadData.message.id));
+                    if (messageList.length > 0) { // check if we should say that it has set messages
+                        setHasMessages(true);
+                    }
                     scrollToBottom();
                     break;
             }
@@ -72,8 +74,7 @@ const ChatComponent = () => {
 
     // message logic
     useEffect(() => {
-        // getMessageHistory(lastMessage); // uncomment when we get it working
-        setLoading(false);
+        getMessageHistory(); // uncomment when we get it working
     }, []);
 
     useEffect(() => {
@@ -96,7 +97,7 @@ const ChatComponent = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authentication": "Bearer " + sessionStorage.get(token)
+                    "Authorization": "Bearer " + sessionStorage.getItem("token")
                 },
                 body: JSON.stringify({
                     "message_id": last_message
@@ -108,20 +109,29 @@ const ChatComponent = () => {
             if (!response.ok) {
                 throw new Error("failed to fetch messages");
             } else {
-                setLastMessageId(data.messages);
-                if (data.messages.length < 100) {
+                console.log(data);
+                setLastMessageId(data);
+                if (data.length < 100) {
                     setGotAllMessages(true); // todo: use this flag to hide button and let user know all messages have been retrieved
+                    console.log("got all messages");
                 }
 
-                if (data.messages.length > 0) { // update last message retrieved
-                    setLastMessageId(data.messages[0].id);
+                if (data.length > 0) { // update last message retrieved
+                    setLastMessageId(data[0].id);
                 }
 
-                setMessageList((prevMessages) => [data.messages, ...prevMessages]); // update message list
+                setMessageList((prevMessages) => [...data, ...prevMessages]); // update message list
+
+                if (messageList.length > 0) { // check if we should say that it has set messages
+                    setHasMessages(true);
+                }
             }
         } catch (error) {
             console.log(error.message); // todo: turn into a status message
         }
+
+        setLoadingMessages(false);
+        setLoading(false);
     }
     const sendMessage = (e) => {
         e.preventDefault();

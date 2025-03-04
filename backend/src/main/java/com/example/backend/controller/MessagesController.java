@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.DTO.MessageDTO;
 import com.example.backend.DTO.MessageHistoryRequest;
 import com.example.backend.DTO.MessageReportRequest;
 import com.example.backend.DTO.RegisterRequest;
@@ -10,7 +11,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -38,9 +41,16 @@ public class MessagesController {
     }
 
     @PostMapping("/history")
-    public ResponseEntity<Map<String, String>> messageHistory(@Validated @RequestBody MessageHistoryRequest request, BindingResult bindingResult) {
-        Map<String, String> response = new HashMap<>();
-        // todo: implement
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<MessageDTO>> messageHistory(@Validated @RequestBody MessageHistoryRequest request, BindingResult bindingResult) {
+        try {
+            if (bindingResult.hasErrors()) {
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+            List<MessageDTO> response = messageService.getMessageHistory(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 }
