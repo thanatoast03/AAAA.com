@@ -25,7 +25,7 @@ const Navbar = () => {
     }
 
     const navigateAdmin = () => {
-        navigate("/admin")
+        navigate("/admin-panel")
     }
 
     const navigateLanding = () => {
@@ -35,11 +35,17 @@ const Navbar = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch("/accounts/me", {
+
+                const token = sessionStorage.getItem("token");
+                if (!token) {
+                    throw new Error("No token found");
+                }
+
+                const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/verify/', {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${sessionStorage.getItem("token")}`
+                        Authorization: `Bearer ${token}`
                     }
                 });
 
