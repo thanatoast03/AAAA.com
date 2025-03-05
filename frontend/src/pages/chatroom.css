@@ -85,6 +85,19 @@
     font-weight: bold;
 }
 
+.timeDeleteFlag {
+    display: flex;
+    flex-direction: row;
+}
+
+.messageHeader img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
 .messageContainer p {
     max-width: 90%;
     overflow-wrap: anywhere;
