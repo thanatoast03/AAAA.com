@@ -25,7 +25,7 @@ const Navbar = () => {
     }
 
     const navigateAdmin = () => {
-        navigate("/admin-panel")
+        navigate("/admin%20panel")
     }
 
     const navigateLanding = () => {
@@ -96,7 +96,7 @@ const Navbar = () => {
                         )}
                         {isAdmin && (
                             <>
-                                {location.pathname === '/admin' && (
+                                {location.pathname === '/admin%20panel' && (
                                     <>
                                         <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
                                         <h1 className="py-3">|</h1>
