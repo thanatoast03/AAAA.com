@@ -11,7 +11,6 @@ const Settings = () => {
     const [changeUsernameStatus,setChangeUsernameStatus] = useState("");
     const [changeEmailStatus, setChangeEmailStatus] = useState("");
     const [changePasswordStatus, setChangePasswordStatus] = useState("");
-    const [setUser] = useState(null); 
 
 
     const openDeleteModal = () => {
