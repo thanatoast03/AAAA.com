@@ -11,6 +11,7 @@ const Settings = () => {
     const [changeUsernameStatus,setChangeUsernameStatus] = useState("");
     const [changeEmailStatus, setChangeEmailStatus] = useState("");
     const [changePasswordStatus, setChangePasswordStatus] = useState("");
+    const [setUser] = useState(null); 
 
 
     const openDeleteModal = () => {
@@ -115,6 +116,13 @@ const Settings = () => {
         setNewPassword(e.target.value); //updates newPassword with input
     }
 
+    /*
+    const handleLogout = () => {
+        sessionStorage.removeItem("token")
+        location.reload()
+    } 
+    */
+
     return (
         <div className="settingsContainer">
             {deleteOpen && <DeleteAccountModal closeDeleteModal={closeDeleteModal}/>}
@@ -123,7 +131,7 @@ const Settings = () => {
                         <h1>Account Settings</h1>
                         <img src={online}/>
                         <button className="settingsPfp">Change Profile Picture</button>
-                        <button className="settingsLogout">Log Out</button>
+                        <button className="settingsLogout" /* onClick={() => handleLogout()} */>Log Out</button>
                     </div>
                     <div className="accountPanel">
                         <div className="accountOption">
