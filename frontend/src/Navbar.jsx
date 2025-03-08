@@ -25,7 +25,11 @@ const Navbar = () => {
     }
 
     const navigateAdmin = () => {
-        navigate("/admin panel")
+        if (isAdmin) {
+            navigate("/admin panel");
+        } else {
+            navigate("/login"); 
+        }
     }
 
     const navigateLanding = () => {
@@ -55,6 +59,7 @@ const Navbar = () => {
 
                 const data = await response.json();
                 setUser(data);
+                console.log(data);
                 setIsAdmin(data.role === "admin");
             } catch (error) {
                 console.error("Error fetching user:", error);
@@ -121,7 +126,6 @@ const Navbar = () => {
                         {location.pathname === '/login' && (
                             <h1 className="p-3 hover:cursor-pointer" onClick={handleRegisterClick}>Register</h1>
                         )}
-                        
                     </>
                 )}
             </div>
