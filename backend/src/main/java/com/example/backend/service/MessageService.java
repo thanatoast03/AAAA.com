@@ -130,6 +130,8 @@ public class MessageService {
             reportedMessage.setCreator(m.getSender());
 
             reportedMessageRepository.saveAndFlush(reportedMessage);
+            m.setNumReported(m.getNumReported() + 1);// incrementing number of reports by 1
+            messageRepository.save(m);
         }, () -> { // if it never found the message by id, throw error
             throw new RuntimeException("couldn't find message with that ID");
         });

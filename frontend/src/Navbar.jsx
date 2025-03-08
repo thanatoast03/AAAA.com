@@ -59,7 +59,7 @@ const Navbar = () => {
 
                 const data = await response.json();
                 setUser(data);
-                console.log(data);
+                console.log(data);//for testiing if admin is working make sure to comment back out when done
                 setIsAdmin(data.role === "admin");
             } catch (error) {
                 console.error("Error fetching user:", error);
