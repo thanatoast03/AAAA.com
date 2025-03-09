@@ -88,6 +88,7 @@ const ChatComponent = () => {
     const getMessageHistory = async () => {
         // http request
         // function that will get initial message history
+        setMessageList([]);
         setLoadingMessages(true);
 
         try {
@@ -121,7 +122,12 @@ const ChatComponent = () => {
                     setHasMessages(true);
                 }
 
-                setMessageList(data); // update message list
+                // update message list
+                setMessageList((prevMessages) => {
+                    const prevMsgIDs = new Set(prevMessages.map(msg => msg.id)); // previous message IDs
+                    const newMessages = data.filter(msg => !prevMsgIDs.has(msg.id)); // only add new ones
+                    return [...newMessages, ...prevMessages]; // merge with no dupes
+                }); 
             }
         } catch (error) {
             console.log(error.message); // todo: turn into a status message
@@ -158,7 +164,7 @@ const ChatComponent = () => {
             body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
         });
 
-        setTimeout(getMessageHistory, 100); 
+        setTimeout(getMessageHistory, 100);
     }
 
     const reportMessage = async (e) => {
