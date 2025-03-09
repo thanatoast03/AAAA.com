@@ -118,13 +118,10 @@ const ChatComponent = () => {
 
                 if (data.length > 0) { // update last message retrieved
                     setLastMessageId(data[0].id);
-                }
-
-                setMessageList((prevMessages) => [...data, ...prevMessages]); // update message list
-
-                if (messageList.length > 0) { // check if we should say that it has set messages
                     setHasMessages(true);
                 }
+
+                setMessageList(data); // update message list
             }
         } catch (error) {
             console.log(error.message); // todo: turn into a status message
@@ -160,6 +157,8 @@ const ChatComponent = () => {
             destination: "/chat/message",
             body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
         });
+
+        setTimeout(getMessageHistory, 100); 
     }
 
     const reportMessage = async (e) => {
