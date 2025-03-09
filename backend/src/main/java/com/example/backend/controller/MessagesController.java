@@ -53,4 +53,15 @@ public class MessagesController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+    @GetMapping("/reported")
+    public ResponseEntity<List<ReportedMessageDTO>> getReportedMessages() {
+        try {
+            List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
+            return ResponseEntity.ok(reportedMessages);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null); // Return error if something goes wrong
+        }
+    }
 }
+
