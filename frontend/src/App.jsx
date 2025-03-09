@@ -7,6 +7,7 @@ import Navbar from './Navbar.jsx';
 import Register from './pages/Register.jsx';
 import Chatroom from './pages/Chatroom.jsx';
 import Settings from './pages/Settings.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
 
 function Layout() {
     return (
@@ -60,11 +61,11 @@ function App() {
                         <Route index element={<Landing /> } />
                         <Route path="register" element={<Register />} />
                         <Route path="login" element={<Login />} />
-                        <Route element={<ProtectedRoute />}>
-                            <Route path="chatroom" element={<Chatroom />}/>
-                            <Route path="settings" element={<Settings />}/>
-                        </Route>
-                    </Route>
+                        <Route path="chatroom" element={<Chatroom />}/>
+                        <Route path="settings" element={<Settings />}/>
+                        <Route path="admin panel" element={<AdminPanel />}/>
+                
+                </Route>
                 </Routes>
             </BrowserRouter>
         </div>
