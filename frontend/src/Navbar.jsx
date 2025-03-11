@@ -25,6 +25,7 @@ const Navbar = () => {
     }
 
     const navigateAdmin = () => {
+
         if (isAdmin) {
             navigate("/admin panel");
         } else {
@@ -59,7 +60,7 @@ const Navbar = () => {
 
                 const data = await response.json();
                 setUser(data);
-                console.log(data);//for testiing if admin is working make sure to comment back out when done
+
                 setIsAdmin(data.role === "admin");
             } catch (error) {
                 console.error("Error fetching user:", error);
@@ -101,7 +102,9 @@ const Navbar = () => {
                         )}
                         {isAdmin && (
                             <>
+                          
                                 {location.pathname === '/admin panel' && (
+
                                     <>
                                         <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
                                         <h1 className="py-3">|</h1>
