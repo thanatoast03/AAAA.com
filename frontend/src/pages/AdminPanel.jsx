@@ -5,7 +5,6 @@ const AdminPanel = () => {
   const [reportedMessages, setReportedMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch top reported messages from the backend
   const fetchReportedMessages = async () => {
     try {
       // Fetch reported messages

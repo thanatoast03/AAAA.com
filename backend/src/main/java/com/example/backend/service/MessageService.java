@@ -147,9 +147,7 @@ public class MessageService {
         }
     }
     public List<ReportedMessageDTO> getReportedMessages() {
-        List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); // Fetch all reported messages
-
-        // Transform the ReportedMessage entity to ReportedMessageDTO
+        List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); //Get all reported messages
         return reportedMessages.stream().map(report -> {
             String creatorUsername = report.getMessage().getSender().getUsername();
             String reporterUsername = report.getCreator().getUsername();
