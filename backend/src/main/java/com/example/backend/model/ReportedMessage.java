@@ -1,9 +1,10 @@
 package com.example.backend.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reportedMessages")
+@Table(name = "reported_messages")
 public class ReportedMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +21,9 @@ public class ReportedMessage {
     @ManyToOne
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
+
+    @Column(name = "reported_at", nullable = false, updatable = false)
+    private LocalDateTime reportedAt = LocalDateTime.now(); 
 
     public Message getMessage() {
         return message;
@@ -51,5 +55,13 @@ public class ReportedMessage {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public LocalDateTime getReportedAt() {
+        return reportedAt;
+    }
+
+    public void setReportedAt(LocalDateTime reportedAt) {
+        this.reportedAt = reportedAt;
     }
 }

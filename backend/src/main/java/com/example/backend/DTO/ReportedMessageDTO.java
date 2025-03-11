@@ -1,4 +1,5 @@
-// ReportedMessageDTO.java
+package com.example.backend.DTO;
+
 public class ReportedMessageDTO {
     private Long id;
     private String creatorUsername;  // Username of the creator of the message

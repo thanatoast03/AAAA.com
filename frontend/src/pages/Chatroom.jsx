@@ -185,7 +185,7 @@ const ChatComponent = () => {
                 throw new Error(data.message); // message is json field for reason of failure
             } else {
                 console.log("successfully reported message");
-                // todo: turn into status message
+                alert("Message reported successfully");
             }
         } catch (error) {
             console.log(error.message);

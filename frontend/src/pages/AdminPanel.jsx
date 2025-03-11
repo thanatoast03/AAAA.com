@@ -9,11 +9,12 @@ const AdminPanel = () => {
   const fetchReportedMessages = async () => {
     try {
       // Fetch reported messages
+      console.log('Token:', sessionStorage.getItem('token'));
       const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/messages/reported', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + sessionStorage.getItem('token'), // Use session storage for authentication
+          'Authorization': 'Bearer ' + sessionStorage.getItem('token'), 
         },
       });
 
@@ -50,17 +51,13 @@ const AdminPanel = () => {
               <tr>
                 <th>Message ID</th>
                 <th>Message Content</th>
-                <th>Reporter</th>
-                <th>Reported Time</th>
               </tr>
             </thead>
             <tbody>
               {reportedMessages.map((message) => (
                 <tr key={message.id}>
                   <td>{message.id}</td>
-                  <td>{message.text}</td>
-                  <td>{message.reporter.username}</td>
-                  <td>{message.reportedAt}</td>
+                  <td>{message.messageText}</td>
                 </tr>
               ))}
             </tbody>
@@ -69,6 +66,19 @@ const AdminPanel = () => {
       </div>
       <div className="section">
         <h2>Top Reported Accounts</h2>
+        {reportedMessages.length === 0 ? (
+          <p>No Reported Accounts</p>
+        ) : (
+          <table>
+            <tbody>
+              {reportedMessages.map((message) => (
+                <tr key={message.id}>
+                  <td>{message.creatorUsername}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
       <div className="section">
         <h2>Sensitive Info Changes:</h2>
