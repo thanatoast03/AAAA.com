@@ -13,11 +13,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.example.backend.model.Message;
 import org.owasp.encoder.Encode;
-
+import com.example.backend.DTO.ReportedMessageDTO;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -130,6 +131,8 @@ public class MessageService {
             reportedMessage.setCreator(m.getSender());
 
             reportedMessageRepository.saveAndFlush(reportedMessage);
+            m.setNumReported(m.getNumReported() + 1);// incrementing number of reports by 1
+            messageRepository.save(m);
         }, () -> { // if it never found the message by id, throw error
             throw new RuntimeException("couldn't find message with that ID");
         });
@@ -143,6 +146,15 @@ public class MessageService {
             return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
         }
     }
+    public List<ReportedMessageDTO> getReportedMessages() {
+        List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); //Get all reported messages
+        return reportedMessages.stream().map(report -> {
+            String creatorUsername = report.getMessage().getSender().getUsername();
+            String reporterUsername = report.getCreator().getUsername();
+            String messageText = report.getMessage().getText();
+            String reportedAt = report.getReportedAt().toString();
+            return new ReportedMessageDTO(report.getId(), creatorUsername, messageText, reporterUsername, reportedAt);
+        }).collect(Collectors.toList());
+    }
 }
-
 

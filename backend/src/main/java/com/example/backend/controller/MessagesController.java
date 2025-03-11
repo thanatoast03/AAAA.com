@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.DTO.ReportedMessageDTO;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,4 +55,17 @@ public class MessagesController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+      @GetMapping("/reported")
+    public ResponseEntity<List<ReportedMessageDTO>> getReportedMessages() { 
+    try {
+        List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
+        return ResponseEntity.ok(reportedMessages);
+    } catch (Exception e) {
+        System.err.println("Error fetching reported messages: " + e.getMessage());
+        return ResponseEntity.status(500).body(null);
+    }
 }
+
+}
+    
+

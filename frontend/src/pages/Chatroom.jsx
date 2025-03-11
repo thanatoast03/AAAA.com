@@ -5,6 +5,8 @@ import './chatroom.css';
 import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
 import trashIcon from '../assets/graphics/trashIcon.png';
+import reportIcon from '../assets/graphics/flag.png.png';
+
 
 // safe HTML entity decoder
 const decodeHTMLEntities = (text) => {
@@ -179,12 +181,11 @@ const ChatComponent = () => {
             });
 
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.message); // message is json field for reason of failure
             } else {
                 console.log("successfully reported message");
-                // todo: turn into status message
+                alert("Message reported successfully");
             }
         } catch (error) {
             console.log(error.message);
@@ -207,6 +208,7 @@ const ChatComponent = () => {
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
                                         <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
+                                        <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
