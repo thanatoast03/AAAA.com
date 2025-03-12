@@ -1,9 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.DTO.MessageDTO;
-import com.example.backend.DTO.MessageHistoryRequest;
-import com.example.backend.DTO.MessageReportRequest;
-import com.example.backend.DTO.MessageRequest;
+import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
 import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
@@ -13,11 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.example.backend.model.Message;
 import org.owasp.encoder.Encode;
-import com.example.backend.DTO.ReportedMessageDTO;
+
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +31,11 @@ public class MessageService {
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
-        switch (message.getAction()) {
-            case "send":
-                return handleSendMessage(message, principal);
-            case "delete":
-                return handleDeleteMessage(message, principal);
-            default:
-                throw new Exception("Invalid message request");
-        }
+        return switch (message.getAction()) {
+            case "send" -> handleSendMessage(message, principal);
+            case "delete" -> handleDeleteMessage(message, principal);
+            default -> throw new Exception("Invalid message request");
+        };
     }
 
     private Map<String, String> handleSendMessage(MessageRequest message, Principal principal) throws Exception {
@@ -111,7 +104,7 @@ public class MessageService {
         return response;
     }
 
-    public void handleReportMessage(MessageReportRequest message) throws Exception {
+    public void handleReportMessage(MessageReportRequest message) {
         messageRepository.findById(message.getMessageId()).ifPresentOrElse(m -> { // get message by id
             Account loggedInUser = accountService.getLoggedInUser(); // get logged in user (won't get here if they are not logged in)
             if (m.getSender().getId().equals(loggedInUser.getId())) {
@@ -144,6 +137,7 @@ public class MessageService {
             return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
         }
     }
+
     public List<ReportedMessageDTO> getReportedMessages() {
         List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); //Get all reported messages
         return reportedMessages.stream().map(report -> {
@@ -153,6 +147,12 @@ public class MessageService {
             String reportedAt = report.getReportedAt().toString();
             return new ReportedMessageDTO(report.getId(), creatorUsername, messageText, reporterUsername, reportedAt);
         }).collect(Collectors.toList());
+    }
+
+    public List<MessageDTO> getUserMessages(UserMessagesRequest messagesRequest) {
+        Account account = accountRepository.findByUsername(messagesRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("couldn't find user with that username"));
+        return messageRepository.findAllBySender(account);
     }
 }
 
