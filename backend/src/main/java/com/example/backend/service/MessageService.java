@@ -14,7 +14,6 @@ import org.owasp.encoder.Encode;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,14 +31,11 @@ public class MessageService {
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
-        switch (message.getAction()) {
-            case "send":
-                return handleSendMessage(message, principal);
-            case "delete":
-                return handleDeleteMessage(message, principal);
-            default:
-                throw new Exception("Invalid message request");
-        }
+        return switch (message.getAction()) {
+            case "send" -> handleSendMessage(message, principal);
+            case "delete" -> handleDeleteMessage(message, principal);
+            default -> throw new Exception("Invalid message request");
+        };
     }
 
     private Map<String, String> handleSendMessage(MessageRequest message, Principal principal) throws Exception {
@@ -108,7 +104,7 @@ public class MessageService {
         return response;
     }
 
-    public void handleReportMessage(MessageReportRequest message) throws Exception {
+    public void handleReportMessage(MessageReportRequest message) {
         messageRepository.findById(message.getMessageId()).ifPresentOrElse(m -> { // get message by id
             Account loggedInUser = accountService.getLoggedInUser(); // get logged in user (won't get here if they are not logged in)
             if (m.getSender().getId().equals(loggedInUser.getId())) {
