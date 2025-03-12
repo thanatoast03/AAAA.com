@@ -85,6 +85,21 @@ public class AccountService implements UserDetailsService {
         SecurityContextHolder.clearContext();//close security context
     }
 
+    public void logoutAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //open security context
+        String token = null;
+
+        //get current token
+        if(authentication != null && authentication.getDetails() instanceof Map){
+            Map<String,Object> details = (Map<String,Object>) authentication.getDetails();
+            token = (String) details.get("token");
+        }
+        if(token != null){
+            jwtUtils.addToBlacklist(token);
+        }
+        SecurityContextHolder.clearContext();
+    }
+
     public String loginAccount(LoginRequest loginRequest) {
         String email = loginRequest.getEmail().toLowerCase().trim();
         Account account = accountRepository.findByEmail(email)

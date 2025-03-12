@@ -2,6 +2,7 @@ import { React, useState, useEffect } from "react";
 import './settings.css';
 import online from '../assets/graphics/online.png';
 import DeleteAccountModal from "../modals/DeleteAccountModal";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
     const [deleteOpen,setDeleteOpen] = useState(false);
@@ -11,6 +12,7 @@ const Settings = () => {
     const [changeUsernameStatus,setChangeUsernameStatus] = useState("");
     const [changeEmailStatus, setChangeEmailStatus] = useState("");
     const [changePasswordStatus, setChangePasswordStatus] = useState("");
+    const navigate = useNavigate();
 
 
     const openDeleteModal = () => {
@@ -115,12 +117,26 @@ const Settings = () => {
         setNewPassword(e.target.value); //updates newPassword with input
     }
 
-    /*
-    const handleLogout = () => {
-        sessionStorage.removeItem("token")
-        location.reload()
+    const handleLogout = async() => {
+        try{
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/logout", {
+                method: "GET",
+                headers: {
+                    "Content-Type" : "application/json",
+                    "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
+                },
+            });
+            const data = await response.json()
+            if(response.ok){
+                sessionStorage.removeItem("token");
+                navigate("/login");
+            } else {
+                console.log("Failed to log out");
+            }
+        } catch (error) {
+            console.log("Failed to log out");
+        }
     } 
-    */
 
     return (
         <div className="settingsContainer">
@@ -130,7 +146,7 @@ const Settings = () => {
                         <h1>Account Settings</h1>
                         <img src={online}/>
                         <button className="settingsPfp">Change Profile Picture</button>
-                        <button className="settingsLogout" /* onClick={() => handleLogout()} */>Log Out</button>
+                        <button className="settingsLogout" onClick={() => handleLogout()}>Log Out</button>
                     </div>
                     <div className="accountPanel">
                         <div className="accountOption">

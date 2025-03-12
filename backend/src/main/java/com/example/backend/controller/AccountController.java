@@ -179,4 +179,13 @@ public class AccountController {
             return ResponseEntity.badRequest().body(response); //return bad request describing error
         }
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<Map<String,String>> logoutAccount() {
+        accountService.logoutAccount();
+        Map<String,String> response = new HashMap<>();
+        response.put("success","true");
+        response.put("message","Logged out, bye bye!");
+        return ResponseEntity.ok(response);
+    }
 }
