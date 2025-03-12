@@ -1,16 +1,13 @@
 package com.example.backend.controller;
 
-import com.example.backend.DTO.MessageDTO;
-import com.example.backend.DTO.MessageHistoryRequest;
-import com.example.backend.DTO.MessageReportRequest;
-import com.example.backend.DTO.RegisterRequest;
+import com.example.backend.DTO.*;
+import com.example.backend.model.Message;
 import com.example.backend.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import com.example.backend.DTO.ReportedMessageDTO;
 
 
 import java.util.ArrayList;
@@ -55,16 +52,30 @@ public class MessagesController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-      @GetMapping("/reported")
+    @GetMapping("/reported")
     public ResponseEntity<List<ReportedMessageDTO>> getReportedMessages() { 
-    try {
-        List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
-        return ResponseEntity.ok(reportedMessages);
-    } catch (Exception e) {
-        System.err.println("Error fetching reported messages: " + e.getMessage());
-        return ResponseEntity.status(500).body(null);
+        try {
+            List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
+            return ResponseEntity.ok(reportedMessages);
+        } catch (Exception e) {
+            System.err.println("Error fetching reported messages: " + e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
-}
+
+    @PostMapping("/user/history")
+    public ResponseEntity<List<MessageDTO>> getUserMessages(@Validated @RequestBody UserMessagesRequest request, BindingResult bindingResult) {
+        try {
+            if (bindingResult.hasErrors()) {
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+            List<MessageDTO> response = messageService.getUserMessages(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 
 }
     

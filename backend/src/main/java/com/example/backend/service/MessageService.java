@@ -1,9 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.DTO.MessageDTO;
-import com.example.backend.DTO.MessageHistoryRequest;
-import com.example.backend.DTO.MessageReportRequest;
-import com.example.backend.DTO.MessageRequest;
+import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
 import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
@@ -13,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.example.backend.model.Message;
 import org.owasp.encoder.Encode;
-import com.example.backend.DTO.ReportedMessageDTO;
+
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -144,6 +141,7 @@ public class MessageService {
             return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
         }
     }
+
     public List<ReportedMessageDTO> getReportedMessages() {
         List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); //Get all reported messages
         return reportedMessages.stream().map(report -> {
@@ -153,6 +151,12 @@ public class MessageService {
             String reportedAt = report.getReportedAt().toString();
             return new ReportedMessageDTO(report.getId(), creatorUsername, messageText, reporterUsername, reportedAt);
         }).collect(Collectors.toList());
+    }
+
+    public List<MessageDTO> getUserMessages(UserMessagesRequest messagesRequest) {
+        Account account = accountRepository.findByUsername(messagesRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("couldn't find user with that username"));
+        return messageRepository.findAllBySender(account);
     }
 }
 
