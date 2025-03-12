@@ -11,16 +11,27 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class JwtUtilService {
     private final String secretKey;
     private final SecretKey key;
+    private Set<String> tokenBlacklist = new HashSet<>(); //token blacklist (contains invalid tokens)
 
     public JwtUtilService(@Value("${spring.jwt.secret_key}") String secretKey) {
         this.secretKey = secretKey;
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
+    public void addToBlacklist(String token){
+        tokenBlacklist.add(token); //add the token to the blacklist
+    }
+
+    public boolean isTokenBlacklisted(String token){
+        return tokenBlacklist.contains(token); //if token is in the blacklist, OUUUUTTTTT
     }
 
     public String generateToken(Map<String, String> extraClaims, String email, long expireInterval) {

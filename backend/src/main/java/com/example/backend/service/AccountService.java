@@ -1,6 +1,7 @@
 package com.example.backend.service;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
+import com.example.backend.DTO.DeleteAccountRequest;
 import com.example.backend.DTO.ChangeUsernameRequest;
 import com.example.backend.DTO.ChangeEmailRequest;
 import com.example.backend.DTO.ChangePasswordRequest;
@@ -56,6 +57,32 @@ public class AccountService implements UserDetailsService {
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         return accountRepository.save(account);
+    }
+
+    public void deleteAccount(DeleteAccountRequest deleteRequest) {
+        String usernameToDelete = deleteRequest.getAccountToDelete();
+        if(usernameToDelete.isBlank()){
+            usernameToDelete = getLoggedInUser().getUsername(); //deletes logged in user if no account is specified
+            //! may be problematic later
+        }
+
+        Account accountToDelete = accountRepository.findByUsername(usernameToDelete).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //open security context
+        String token = null;
+
+        //get current token
+        if(authentication != null && authentication.getDetails() instanceof Map){
+            Map<String,Object> details = (Map<String,Object>) authentication.getDetails();
+            token = (String) details.get("token");
+        }
+
+        if(token != null){
+            jwtUtils.addToBlacklist(token);//add token to blacklist
+        }
+
+        accountRepository.delete(accountToDelete); //goodbye account :NimiSobYT:
+        SecurityContextHolder.clearContext();//close security context
     }
 
     public String loginAccount(LoginRequest loginRequest) {
