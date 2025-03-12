@@ -92,11 +92,9 @@ public class MessageService {
             // essentially, if person requesting the deletion is the same person who created message, they can delete
             accountRepository.findByUsername(principal.getName()) // search for principal in account DB
                 .ifPresent(account -> { // if principal found
-                    System.out.println("found account of requester");
                     messageRepository.findById(id).ifPresent(m -> { // find message by ID
-                        System.out.println("found message by id");
-                        if (m.getSender().getId().equals(account.getId())) { // if the sender is the person who created the message
-                            System.out.println("the sender was the same as the requester");
+                        if (m.getSender().getId().equals(account.getId()) || account.getRole().equals("admin")) { // if the sender is the person who created the message OR admin
+                            System.out.println("role of requester: " + account.getRole());
                             Long idDeleted = m.getId();
                             messageRepository.delete(m); // they can delete the message
                             System.out.println("successfully deleted message");
