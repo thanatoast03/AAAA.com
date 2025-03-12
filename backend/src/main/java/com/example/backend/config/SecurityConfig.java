@@ -35,7 +35,7 @@ public class SecurityConfig {
                     .permitAll()
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/accounts/register", "/accounts/login").permitAll()
+                        .requestMatchers("/accounts/register", "/accounts/login", "/ws/**").permitAll() // ? isn't allowing ws like the unsafest thing ever
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

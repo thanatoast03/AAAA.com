@@ -25,6 +25,7 @@ public class JWTCheckController {
         Map<String, String> response = new HashMap<>();
         response.put("id", account.getId().toString());
         response.put("username", account.getUsername());
+        response.put("role", account.getRole());
         return ResponseEntity.ok(response);
     }
 }

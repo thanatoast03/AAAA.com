@@ -106,9 +106,9 @@ public class AccountService implements UserDetailsService {
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // try to authenticate
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, loginRequest.getPassword())
-        );
+        ); //! SUPER IMPORTANT; THROWS ERROR IF CREDENTIALS ARE INCORRECT
 
         // create AuthenticatedUser and set authorities
         Set<GrantedAuthority> authorities = new HashSet<>();
@@ -124,10 +124,12 @@ public class AccountService implements UserDetailsService {
         SecurityContextHolder.getContext().setAuthentication(customAuth);
 
         // generate token with extra claims
-        Map<String, String> extraClaims = new HashMap<>();
-        extraClaims.put("id", account.getId().toString());
-        extraClaims.put("username", account.getUsername());
-        extraClaims.put("role", account.getRole());
+        Map<String, Map<String, String>> extraClaims = new HashMap<>();
+        Map<String, String> claims = new HashMap<>();
+        extraClaims.put("extraClaims", claims);
+        claims.put("id", account.getId().toString());
+        claims.put("username", account.getUsername());
+        claims.put("role", account.getRole());
 
         return jwtUtils.generateToken(extraClaims, email, 86400000);
     }
