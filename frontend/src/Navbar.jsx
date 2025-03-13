@@ -21,52 +21,57 @@ const Navbar = () => {
     }
 
     const navigateChatroom = () => {
-        navigate("/chatroom")
+        navigate("/chatroom");
     }
 
     const navigateAdmin = () => {
-        navigate("/admin-panel")
+        navigate("/admin-panel");
     }
 
     const navigateLanding = () => {
-        navigate("/")
+        navigate("/");
     }
 
     useEffect(() => {
         const fetchUser = async () => {
-            try {
+            const token = sessionStorage.getItem("token");
 
-                const token = sessionStorage.getItem("token");
-                if (!token || token === "null") {
-                    throw new Error("No token found");
+            if (!token) {
+                setUser(null);
+                setIsAdmin(false);
+                if (["/chatroom", "/settings", "/admin-panel"].includes(location.pathname)) {
+                    navigate("/");
                 }
+                return;
+            }
 
-                const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/verify/', {
+            try {
+                const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/verify/", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
 
-                if (!response.ok) {
-                    throw new Error("User not authenticated");
-                }
+                if (!response.ok) throw new Error("Invalid token");
 
                 const data = await response.json();
                 setUser(data);
                 setIsAdmin(data.role === "admin");
             } catch (error) {
-                console.error("Error fetching user:", error);
+                console.error("Error verifying user:", error);
                 sessionStorage.removeItem("token");
                 setUser(null);
                 setIsAdmin(false);
-                navigateLanding;
+                if (["/chatroom", "/settings", "/admin-panel"].includes(location.pathname)) {
+                    navigate("/");
+                }
             }
         };
 
         fetchUser();
-    }, []);
+    }, [navigate, location.pathname]);
 
     return (
         <nav className="text-white flex justify-between bg-[#202020] text-3xl shadow-xl">
