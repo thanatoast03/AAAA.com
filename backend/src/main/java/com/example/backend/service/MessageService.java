@@ -2,14 +2,14 @@ package com.example.backend.service;
 
 import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
+import com.example.backend.model.Message;
 import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
 import com.example.backend.repository.MessageRepository;
 import com.example.backend.repository.ReportedMessageRepository;
+import org.owasp.encoder.Encode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import com.example.backend.model.Message;
-import org.owasp.encoder.Encode;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -145,8 +145,30 @@ public class MessageService {
             String reporterUsername = report.getCreator().getUsername();
             String messageText = report.getMessage().getText();
             String reportedAt = report.getReportedAt().toString();
-            return new ReportedMessageDTO(report.getId(), creatorUsername, messageText, reporterUsername, reportedAt);
+            Long messageId = report.getMessage().getId();
+            return new ReportedMessageDTO(report.getId(), messageId, creatorUsername, messageText, reporterUsername, reportedAt);
         }).collect(Collectors.toList());
+    }
+
+    public Map<String, Object> compileReportedMessages(List<ReportedMessageDTO> reportedMessages) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Integer> reportedUsers = new HashMap<>();
+        Map<Long, Integer> reportedMessageOccurrences = new HashMap<>();
+
+        // count unique usernames and add them to map
+        for (ReportedMessageDTO reportedMessage : reportedMessages) {
+            String username = reportedMessage.getCreatorUsername();
+            reportedUsers.put(username, reportedUsers.getOrDefault(username, 0) + 1);
+
+            Long messageId = reportedMessage.getMessageId();
+            reportedMessageOccurrences.put(messageId, reportedMessageOccurrences.getOrDefault(messageId, 0) + 1);
+        }
+
+        response.put("reported_messages", reportedMessages);
+        response.put("reported_users", reportedUsers);
+        response.put("reported_message_occurrences", reportedMessageOccurrences);
+
+        return response;
     }
 
     public List<MessageDTO> getUserMessages(UserMessagesRequest messagesRequest) {
