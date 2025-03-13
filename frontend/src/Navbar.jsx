@@ -25,7 +25,7 @@ const Navbar = () => {
     }
 
     const navigateAdmin = () => {
-        navigate("/admin%20panel")
+        navigate("/admin-panel")
     }
 
     const navigateLanding = () => {
@@ -37,7 +37,7 @@ const Navbar = () => {
             try {
 
                 const token = sessionStorage.getItem("token");
-                if (!token) {
+                if (!token || token === "null") {
                     throw new Error("No token found");
                 }
 
@@ -58,8 +58,10 @@ const Navbar = () => {
                 setIsAdmin(data.role === "admin");
             } catch (error) {
                 console.error("Error fetching user:", error);
+                sessionStorage.removeItem("token");
                 setUser(null);
                 setIsAdmin(false);
+                navigateLanding;
             }
         };
 
@@ -94,9 +96,24 @@ const Navbar = () => {
                                 <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
                             </>
                         )}
+                        {location.pathname === '/' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {location.pathname === '/login' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {location.pathname === '/register' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
                         {isAdmin && (
                             <>
-                                {location.pathname === '/admin%20panel' && (
+                                {location.pathname === '/admin-panel' && (
                                     <>
                                         <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
                                         <h1 className="py-3">|</h1>
