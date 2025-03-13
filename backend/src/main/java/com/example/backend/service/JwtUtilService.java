@@ -33,7 +33,7 @@ public class JwtUtilService {
         Claims claims = extractAllClaims(token);
         Instant expiration = claims.getExpiration().toInstant();
         BlacklistedToken blacklistedToken = new BlacklistedToken(token,expiration);
-        BlacklistedToken saved = tokenRepository.save(blacklistedToken); //add the token to the blacklist database
+        tokenRepository.save(blacklistedToken); //add the token to the blacklist database
     }
 
     public boolean isTokenBlacklisted(String token){
@@ -63,6 +63,9 @@ public class JwtUtilService {
     }
     
     public boolean isExpired(String token) {
+        if(isTokenBlacklisted(token)){
+            return true;
+        }
         try {
             Claims claims = extractAllClaims(token);
             return claims.getExpiration().before(new Date());
