@@ -63,9 +63,8 @@ function App() {
                         <Route path="login" element={<Login />} />
                         <Route path="chatroom" element={<Chatroom />}/>
                         <Route path="settings" element={<Settings />}/>
-                        <Route path="admin panel" element={<AdminPanel />}/>
-                
-                </Route>
+                        <Route path="admin-panel" element={<AdminPanel />}/>
+                    </Route>
                 </Routes>
             </BrowserRouter>
         </div>
