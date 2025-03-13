@@ -1,23 +1,20 @@
 package com.example.backend.service;
 
-import com.example.backend.DTO.MessageDTO;
-import com.example.backend.DTO.MessageHistoryRequest;
-import com.example.backend.DTO.MessageReportRequest;
-import com.example.backend.DTO.MessageRequest;
+import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
+import com.example.backend.model.Message;
 import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
 import com.example.backend.repository.MessageRepository;
 import com.example.backend.repository.ReportedMessageRepository;
+import org.owasp.encoder.Encode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import com.example.backend.model.Message;
-import org.owasp.encoder.Encode;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -34,14 +31,11 @@ public class MessageService {
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
-        switch (message.getAction()) {
-            case "send":
-                return handleSendMessage(message, principal);
-            case "delete":
-                return handleDeleteMessage(message, principal);
-            default:
-                throw new Exception("Invalid message request");
-        }
+        return switch (message.getAction()) {
+            case "send" -> handleSendMessage(message, principal);
+            case "delete" -> handleDeleteMessage(message, principal);
+            default -> throw new Exception("Invalid message request");
+        };
     }
 
     private Map<String, String> handleSendMessage(MessageRequest message, Principal principal) throws Exception {
@@ -91,11 +85,9 @@ public class MessageService {
             // essentially, if person requesting the deletion is the same person who created message, they can delete
             accountRepository.findByUsername(principal.getName()) // search for principal in account DB
                 .ifPresent(account -> { // if principal found
-                    System.out.println("found account of requester");
                     messageRepository.findById(id).ifPresent(m -> { // find message by ID
-                        System.out.println("found message by id");
-                        if (m.getSender().getId().equals(account.getId())) { // if the sender is the person who created the message
-                            System.out.println("the sender was the same as the requester");
+                        if (m.getSender().getId().equals(account.getId()) || account.getRole().equals("admin")) { // if the sender is the person who created the message OR admin
+                            System.out.println("role of requester: " + account.getRole());
                             Long idDeleted = m.getId();
                             messageRepository.delete(m); // they can delete the message
                             System.out.println("successfully deleted message");
@@ -112,7 +104,7 @@ public class MessageService {
         return response;
     }
 
-    public void handleReportMessage(MessageReportRequest message) throws Exception {
+    public void handleReportMessage(MessageReportRequest message) {
         messageRepository.findById(message.getMessageId()).ifPresentOrElse(m -> { // get message by id
             Account loggedInUser = accountService.getLoggedInUser(); // get logged in user (won't get here if they are not logged in)
             if (m.getSender().getId().equals(loggedInUser.getId())) {
@@ -130,6 +122,8 @@ public class MessageService {
             reportedMessage.setCreator(m.getSender());
 
             reportedMessageRepository.saveAndFlush(reportedMessage);
+            m.setNumReported(m.getNumReported() + 1);// incrementing number of reports by 1
+            messageRepository.save(m);
         }, () -> { // if it never found the message by id, throw error
             throw new RuntimeException("couldn't find message with that ID");
         });
@@ -143,6 +137,44 @@ public class MessageService {
             return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
         }
     }
-}
 
+    public List<ReportedMessageDTO> getReportedMessages() {
+        List<ReportedMessage> reportedMessages = reportedMessageRepository.findAll(); //Get all reported messages
+        return reportedMessages.stream().map(report -> {
+            String creatorUsername = report.getMessage().getSender().getUsername();
+            String reporterUsername = report.getCreator().getUsername();
+            String messageText = report.getMessage().getText();
+            String reportedAt = report.getReportedAt().toString();
+            Long messageId = report.getMessage().getId();
+            return new ReportedMessageDTO(report.getId(), messageId, creatorUsername, messageText, reporterUsername, reportedAt);
+        }).collect(Collectors.toList());
+    }
+
+    public Map<String, Object> compileReportedMessages(List<ReportedMessageDTO> reportedMessages) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Integer> reportedUsers = new HashMap<>();
+        Map<Long, Integer> reportedMessageOccurrences = new HashMap<>();
+
+        // count unique usernames and add them to map
+        for (ReportedMessageDTO reportedMessage : reportedMessages) {
+            String username = reportedMessage.getCreatorUsername();
+            reportedUsers.put(username, reportedUsers.getOrDefault(username, 0) + 1);
+
+            Long messageId = reportedMessage.getMessageId();
+            reportedMessageOccurrences.put(messageId, reportedMessageOccurrences.getOrDefault(messageId, 0) + 1);
+        }
+
+        response.put("reported_messages", reportedMessages);
+        response.put("reported_users", reportedUsers);
+        response.put("reported_message_occurrences", reportedMessageOccurrences);
+
+        return response;
+    }
+
+    public List<MessageDTO> getUserMessages(UserMessagesRequest messagesRequest) {
+        Account account = accountRepository.findByUsername(messagesRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("couldn't find user with that username"));
+        return messageRepository.findAllBySender(account);
+    }
+}
 

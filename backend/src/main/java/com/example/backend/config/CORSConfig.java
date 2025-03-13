@@ -18,7 +18,9 @@ public class CORSConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         if ("dev".equals(activeProfile)) { // specifically for dev
-            config.setAllowedOrigins(List.of("http://localhost:1234")); // allow local React frontend
+            config.setAllowedOrigins(List.of(
+                    "http://localhost:1234", // allow local React frontend
+                    "app://*")); // allow apps like Postman
         } else {
             config.setAllowedOrigins(List.of("https://aaaa418.com")); // allow only production frontend
         }

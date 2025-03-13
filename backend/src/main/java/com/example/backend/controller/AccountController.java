@@ -1,7 +1,11 @@
 package com.example.backend.controller;
 
+import com.example.backend.DTO.ChangeUsernameRequest;
+import com.example.backend.DTO.ChangeEmailRequest;
+import com.example.backend.DTO.ChangePasswordRequest;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
+import com.example.backend.DTO.DeleteAccountRequest;
 import com.example.backend.service.AccountService;
 import com.example.backend.service.ReCAPTCHAService;
 
@@ -84,5 +88,127 @@ public class AccountController {
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @PostMapping("/changeUsername")
+    public ResponseEntity<Map<String,String>> changeUsername(@Validated @RequestBody ChangeUsernameRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if username request is a valid username request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            String token = accountService.changeUsername(request); //pass request on to AccountService, get token on successful change
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Username successfully changed");
+            response.put("token",token);
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/changeEmail")
+    public ResponseEntity<Map<String,String>> changeEmail(@Validated @RequestBody ChangeEmailRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if email request is a valid email request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            String token = accountService.changeEmail(request); //pass request on to AccountService, get token on successful change
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Email successfully changed");
+            response.put("token",token);
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<Map<String,String>> changePassword(@Validated @RequestBody ChangePasswordRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if password request is a valid password request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            accountService.changePassword(request); //pass request on to AccountService
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Password successfully changed");
+
+            return ResponseEntity.ok(response); //return response object
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/deleteAccount")
+    public ResponseEntity<Map<String,String>> deleteAccount(@Validated @RequestBody DeleteAccountRequest request, BindingResult bindingResult, @RequestHeader("Authorization") String authHeader) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if password request is a valid password request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            String token = null;
+            if(authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+
+            if(token == null){
+                response.put("success","false");
+                response.put("message","No token found");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            accountService.deleteAccount(request,token); //pass request on to AccountService
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Account deleted. Bye bye!");
+            return ResponseEntity.ok(response); //return response object
+            
+        } catch (Exception e) {
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutAccount(@RequestHeader("Authorization") String authHeader) {
+        Map<String,String> response = new HashMap<>();
+
+        String token = null;
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7); //cuts out "Bearer "
+        }
+
+        if(token == null){
+            response.put("success","false");
+            response.put("message","No token found");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        accountService.logoutAccount(token);
+        response.put("success","true");
+        response.put("message","Logged out, bye bye!");
+        return ResponseEntity.ok(response);
     }
 }

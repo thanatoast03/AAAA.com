@@ -1,9 +1,15 @@
 package com.example.backend.service;
 import com.example.backend.DTO.LoginRequest;
 import com.example.backend.DTO.RegisterRequest;
+import com.example.backend.DTO.DeleteAccountRequest;
+import com.example.backend.DTO.ChangeUsernameRequest;
+import com.example.backend.DTO.ChangeEmailRequest;
+import com.example.backend.DTO.ChangePasswordRequest;
 import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,10 +61,32 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
+    @Transactional
+    public void deleteAccount(DeleteAccountRequest deleteRequest, String token) {
+        String usernameToDelete = deleteRequest.getAccountToDelete();
+        if(usernameToDelete.isBlank()){
+            usernameToDelete = getLoggedInUser().getUsername(); //deletes logged in user if no account is specified
+        }
+
+        Account accountToDelete = accountRepository.findByUsername(usernameToDelete).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if(token != null){
+            jwtUtils.addToBlacklist(token);//add token to blacklist
+        }
+
+        accountRepository.delete(accountToDelete); //goodbye account :NimiSobYT:
+    }
+
+    public void logoutAccount(String token) {
+        if(token != null){
+            jwtUtils.addToBlacklist(token);
+        }
+    }
+
     public String loginAccount(LoginRequest loginRequest) {
         String email = loginRequest.getEmail().toLowerCase().trim();
         Account account = accountRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // try to authenticate
         authenticationManager.authenticate(
@@ -87,6 +115,64 @@ public class AccountService implements UserDetailsService {
         claims.put("role", account.getRole());
 
         return jwtUtils.generateToken(extraClaims, email, 86400000);
+    }
+
+    public String changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
+        String oldUsername = getLoggedInUser().getUsername(); //get old username
+        String newUsername = usernameRequest.getNewUsername(); //get new username from request
+
+        Account currentUser = accountRepository.findByUsername(oldUsername).orElseThrow(() -> new Exception("User not found"));
+
+        if (accountRepository.existsByUsername(newUsername) || newUsername.equals(oldUsername)) {
+            throw new Exception("Username is already in use.");
+        }
+
+        currentUser.setUsername(newUsername);
+        accountRepository.save(currentUser);
+
+        // generate token with extra claims
+        Map<String, Map<String,String>> extraClaims = new HashMap<>();
+        Map<String,String> claims = new HashMap<>();
+        extraClaims.put("extraClaims",claims);
+        claims.put("id", currentUser.getId().toString());
+        claims.put("username", currentUser.getUsername());
+        claims.put("role", currentUser.getRole());
+
+        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+    }
+
+    public String changeEmail(ChangeEmailRequest emailRequest) throws Exception{
+        String oldEmail = getLoggedInUser().getEmail(); //get old email for email change
+        String newEmail = emailRequest.getNewEmail(); //get new email from request
+
+        Account currentUser = accountRepository.findByEmail(oldEmail).orElseThrow(() -> new Exception("User not found"));
+
+        if (accountRepository.existsByEmail(newEmail) || newEmail.equals(oldEmail)) {
+            throw new Exception("Email is already in use.");
+        }
+
+        currentUser.setEmail(newEmail);
+        accountRepository.save(currentUser);
+
+        // generate token with extra claims
+        Map<String, Map<String,String>> extraClaims = new HashMap<>();
+        Map<String,String> claims = new HashMap<>();
+        extraClaims.put("extraClaims",claims);
+        claims.put("id", currentUser.getId().toString());
+        claims.put("username", currentUser.getUsername());
+        claims.put("role", currentUser.getRole());
+
+        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+    }
+
+    public void changePassword(ChangePasswordRequest passwordRequest) throws Exception{
+        String email = getLoggedInUser().getEmail(); //get email for password change
+        String newPassword = passwordRequest.getNewPassword(); //get new password from request
+
+        Account currentUser = accountRepository.findByEmail(email).orElseThrow(() -> new Exception("User not found"));
+
+        currentUser.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(currentUser);
     }
 
     @Override
