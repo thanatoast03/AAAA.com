@@ -10,31 +10,37 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.example.backend.model.BlacklistedToken;
+import com.example.backend.repository.TokenRepository;
+
+import java.time.Instant;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 public class JwtUtilService {
     private final String secretKey;
     private final SecretKey key;
-    private Set<String> tokenBlacklist = new HashSet<>(); //token blacklist (contains invalid tokens)
+    private final TokenRepository tokenRepository;
 
-    public JwtUtilService(@Value("${spring.jwt.secret_key}") String secretKey) {
+    public JwtUtilService(@Value("${spring.jwt.secret_key}") String secretKey, TokenRepository tokenRepository) {
         this.secretKey = secretKey;
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.tokenRepository = tokenRepository;
     }
 
     public void addToBlacklist(String token){
-        tokenBlacklist.add(token); //add the token to the blacklist
+        Claims claims = extractAllClaims(token);
+        Instant expiration = claims.getExpiration().toInstant();
+        BlacklistedToken blacklistedToken = new BlacklistedToken(token,expiration);
+        BlacklistedToken saved = tokenRepository.save(blacklistedToken); //add the token to the blacklist database
     }
 
     public boolean isTokenBlacklisted(String token){
-        return tokenBlacklist.contains(token); //if token is in the blacklist, OUUUUTTTTT
+        return tokenRepository.existsByToken(token);
     }
 
-    public String generateToken(Map<String, String> extraClaims, String email, long expireInterval) {
+    public String generateToken(Map<String, Map<String, String>> extraClaims, String email, long expireInterval) {
         return Jwts
                 .builder()
                 .claims()

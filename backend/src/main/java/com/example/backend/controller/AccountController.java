@@ -159,7 +159,7 @@ public class AccountController {
     }
 
     @PostMapping("/deleteAccount")
-    public ResponseEntity<Map<String,String>> deleteAccount(@Validated @RequestBody DeleteAccountRequest request, BindingResult bindingResult) {
+    public ResponseEntity<Map<String,String>> deleteAccount(@Validated @RequestBody DeleteAccountRequest request, BindingResult bindingResult, @RequestHeader("Authorization") String authHeader) {
         Map<String,String> response = new HashMap<>();
 
         try{
@@ -167,12 +167,23 @@ public class AccountController {
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 
-            accountService.deleteAccount(request); //pass request on to AccountService
+            String token = null;
+            if(authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+
+            if(token == null){
+                response.put("success","false");
+                response.put("message","No token found");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            accountService.deleteAccount(request,token); //pass request on to AccountService
 
             response.put("success","true"); //create response to be returned
             response.put("message","Account deleted. Bye bye!");
-
             return ResponseEntity.ok(response); //return response object
+            
         } catch (Exception e) {
             response.put("success","false"); //bad response
             response.put("message",e.getMessage()); //contain error
@@ -180,10 +191,22 @@ public class AccountController {
         }
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<Map<String,String>> logoutAccount() {
-        accountService.logoutAccount();
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutAccount(@RequestHeader("Authorization") String authHeader) {
         Map<String,String> response = new HashMap<>();
+
+        String token = null;
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7); //cuts out "Bearer "
+        }
+
+        if(token == null){
+            response.put("success","false");
+            response.put("message","No token found");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        accountService.logoutAccount(token);
         response.put("success","true");
         response.put("message","Logged out, bye bye!");
         return ResponseEntity.ok(response);

@@ -9,6 +9,8 @@ import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -59,45 +61,26 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
-    public void deleteAccount(DeleteAccountRequest deleteRequest) {
+    @Transactional
+    public void deleteAccount(DeleteAccountRequest deleteRequest, String token) {
         String usernameToDelete = deleteRequest.getAccountToDelete();
         if(usernameToDelete.isBlank()){
             usernameToDelete = getLoggedInUser().getUsername(); //deletes logged in user if no account is specified
-            //! may be problematic later
         }
 
         Account accountToDelete = accountRepository.findByUsername(usernameToDelete).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //open security context
-        String token = null;
-
-        //get current token
-        if(authentication != null && authentication.getDetails() instanceof Map){
-            Map<String,Object> details = (Map<String,Object>) authentication.getDetails();
-            token = (String) details.get("token");
-        }
 
         if(token != null){
             jwtUtils.addToBlacklist(token);//add token to blacklist
         }
 
         accountRepository.delete(accountToDelete); //goodbye account :NimiSobYT:
-        SecurityContextHolder.clearContext();//close security context
     }
 
-    public void logoutAccount() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //open security context
-        String token = null;
-
-        //get current token
-        if(authentication != null && authentication.getDetails() instanceof Map){
-            Map<String,Object> details = (Map<String,Object>) authentication.getDetails();
-            token = (String) details.get("token");
-        }
+    public void logoutAccount(String token) {
         if(token != null){
             jwtUtils.addToBlacklist(token);
         }
-        SecurityContextHolder.clearContext();
     }
 
     public String loginAccount(LoginRequest loginRequest) {
@@ -148,10 +131,12 @@ public class AccountService implements UserDetailsService {
         accountRepository.save(currentUser);
 
         // generate token with extra claims
-        Map<String, String> extraClaims = new HashMap<>();
-        extraClaims.put("id", currentUser.getId().toString());
-        extraClaims.put("username", currentUser.getUsername());
-        extraClaims.put("role", currentUser.getRole());
+        Map<String, Map<String,String>> extraClaims = new HashMap<>();
+        Map<String,String> claims = new HashMap<>();
+        extraClaims.put("extraClaims",claims);
+        claims.put("id", currentUser.getId().toString());
+        claims.put("username", currentUser.getUsername());
+        claims.put("role", currentUser.getRole());
 
         return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
     }
@@ -170,10 +155,12 @@ public class AccountService implements UserDetailsService {
         accountRepository.save(currentUser);
 
         // generate token with extra claims
-        Map<String, String> extraClaims = new HashMap<>();
-        extraClaims.put("id", currentUser.getId().toString());
-        extraClaims.put("username", currentUser.getUsername());
-        extraClaims.put("role", currentUser.getRole());
+        Map<String, Map<String,String>> extraClaims = new HashMap<>();
+        Map<String,String> claims = new HashMap<>();
+        extraClaims.put("extraClaims",claims);
+        claims.put("id", currentUser.getId().toString());
+        claims.put("username", currentUser.getUsername());
+        claims.put("role", currentUser.getRole());
 
         return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
     }

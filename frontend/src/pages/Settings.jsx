@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { React, useState } from "react";
 import './settings.css';
 import online from '../assets/graphics/online.png';
 import DeleteAccountModal from "../modals/DeleteAccountModal";
@@ -120,7 +120,7 @@ const Settings = () => {
     const handleLogout = async() => {
         try{
             const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/logout", {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type" : "application/json",
                     "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
@@ -128,13 +128,12 @@ const Settings = () => {
             });
             const data = await response.json()
             if(response.ok){
+                setChangePasswordStatus("");
                 sessionStorage.removeItem("token");
                 navigate("/login");
-            } else {
-                console.log("Failed to log out");
             }
         } catch (error) {
-            console.log("Failed to log out");
+            setChangePasswordStatus("Failed to log out");
         }
     } 
 
