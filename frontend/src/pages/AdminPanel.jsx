@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import './AdminPanel.css';
 import {useNavigate} from "react-router-dom";
 
 const AdminPanel = () => {
   const [reportedMessages, setReportedMessages] = useState([]);
+  const [reportedUsers, setReportedUsers] = useState([]);
+  const [reportedMessageOccurrences, setReportedMessageOccurrences] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -35,7 +37,6 @@ const AdminPanel = () => {
           const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/messages/reported', {
             method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + sessionStorage.getItem('token'),
             },
           });
@@ -45,7 +46,9 @@ const AdminPanel = () => {
           }
 
           const data = await response.json();
-          setReportedMessages(data);
+          setReportedMessages(data.reported_messages);
+          setReportedUsers(Object.entries(data.reported_users));
+          setReportedMessageOccurrences(data.reported_message_occurrences);
           setLoading(false);
       } catch (error) {
           console.error('Error fetching reported messages:', error);
@@ -61,60 +64,58 @@ const AdminPanel = () => {
   if (loading) return <div>Loading...</div>;
 
   return (
-      <div className="flex flex-col">
-        <div className="admin-panel">
-          <div className="section">
-            <h2>Top Reported Messages:</h2>
-            {reportedMessages.length === 0 ? (
-                <p>No reported messages</p>
-            ) : (
-                <table>
-                  <thead>
-                  <tr>
-                    <th>Message ID</th>
-                    <th>Message Content</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {reportedMessages.map((message) => (
-                      <tr key={message.id}>
-                        <td>{message.id}</td>
-                        <td>{message.messageText}</td>
-                      </tr>
-                  ))}
-                  </tbody>
-                </table>
-            )}
+      <div className="flex flex-col text-white font-casual w-full">
+          <div className="admin-panel">
+              <div className="section flex flex-col">
+                  <h2 className="text-3xl sticky top-0 pb-2">Top Reported Messages:</h2>
+                  <div className="overflow-y-auto flex-grow pr-2">
+                      {reportedMessages.length === 0 ? (
+                          <p>No reported messages</p>
+                      ) : (
+                          reportedMessages.map((message) => (
+                              <div key={message.id} id={message.id} className="mb-4 p-3 border rounded">
+                                  <div className="flex-row text-xl">
+                                      <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
+                                  </div>
+                                  <p>{message.messageText}</p>
+                              </div>
+                          ))
+                      )}
+                  </div>
+              </div>
+
+              <div className="section flex flex-col">
+                  <h2 className="text-3xl sticky top-0 pb-2">Top Reported Accounts</h2>
+                  <div className="overflow-y-auto flex-grow pr-2">
+                      {reportedUsers.length === 0 ? (
+                          <p>No Reported Accounts</p>
+                      ) : (
+                          reportedUsers.map(([username, count]) => (
+                              <div key={username} id={username} className="mb-4 p-3 border rounded">
+                                  <p>{username} - {count}</p>
+                              </div>
+                          ))
+                      )}
+                  </div>
+              </div>
+
+              <div className="section flex flex-col">
+                  <h2 className="text-3xl sticky top-0 pb-2">Sensitive Info Changes:</h2>
+                  <div className="overflow-y-auto flex-grow pr-2"></div>
+              </div>
           </div>
-          <div className="section">
-            <h2>Top Reported Accounts</h2>
-            {reportedMessages.length === 0 ? (
-                <p>No Reported Accounts</p>
-            ) : (
-                <table>
-                  <tbody>
-                  {reportedMessages.map((message) => (
-                      <tr key={message.id}>
-                        <td>{message.creatorUsername}</td>
-                      </tr>
-                  ))}
-                  </tbody>
-                </table>
-            )}
+          <div className="flex flex-col w-[calc(33%-20px)] ml-[20px] p-[15px] bg-[#2A2A2A] rounded-lg drop-shadow-xl">
+              <h2 className="text-2xl">Delete Account:</h2>
+              <div className="flex flex-col">
+                  <input
+                      type="text"
+                      placeholder="Type username here..."
+                      className="text-black p-2 mb-2 rounded"
+                      maxLength="32"
+                  />
+                  <button className="bg-red-600 p-2 rounded hover:bg-red-700">Delete Account</button>
+              </div>
           </div>
-          <div className="section">
-            <h2>Sensitive Info Changes:</h2>
-          </div>
-        </div>
-        <div className="delete-account">
-          <div className="delete-input-container">
-            <input
-                type="text"
-                placeholder="Type username here..."
-            />
-            <button className="delete-button">Delete Account</button>
-          </div>
-        </div>
       </div>
   );
 };

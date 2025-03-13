@@ -2,14 +2,16 @@ package com.example.backend.DTO;
 
 public class ReportedMessageDTO {
     private Long id;
+    private Long messageId;
     private String creatorUsername;  // Username of the creator of the message
     private String messageText;      // The actual message text
     private String reporterUsername; // Username of the person who reported the message
     private String reportedAt;       // The date/time when the message was reported
 
     // Constructor
-    public ReportedMessageDTO(Long id, String creatorUsername, String messageText, String reporterUsername, String reportedAt) {
+    public ReportedMessageDTO(Long id, Long messageId, String creatorUsername, String messageText, String reporterUsername, String reportedAt) {
         this.id = id;
+        this.messageId = messageId;
         this.creatorUsername = creatorUsername;
         this.messageText = messageText;
         this.reporterUsername = reporterUsername;
@@ -23,6 +25,14 @@ public class ReportedMessageDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(Long messageId) {
+        this.messageId = messageId;
     }
 
     public String getCreatorUsername() {

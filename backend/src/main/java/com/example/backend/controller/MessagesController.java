@@ -50,13 +50,14 @@ public class MessagesController {
         }
     }
     @GetMapping("/reported")
-    public ResponseEntity<List<ReportedMessageDTO>> getReportedMessages() { 
+    public ResponseEntity<Map<String, Object>> getReportedMessages() {
         try {
             List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
-            return ResponseEntity.ok(reportedMessages);
+            Map<String, Object> response = messageService.compileReportedMessages(reportedMessages);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.err.println("Error fetching reported messages: " + e.getMessage());
-            return ResponseEntity.status(500).body(null);
+            return ResponseEntity.badRequest().body(null);
         }
     }
 

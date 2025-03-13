@@ -4,11 +4,11 @@
     flex-direction: row;
     gap: 20px;
     padding: 20px;
-    height: 60vh
+    height: 70vh;
   }
   
   .section {
-    background-color: #5A5A5A;
+    background-color: #2A2A2A;
     padding: 15px;
     width: 100%;
     border-radius: 8px;
