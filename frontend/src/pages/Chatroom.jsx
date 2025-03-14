@@ -55,7 +55,7 @@ const ChatComponent = () => {
     useSubscription("/topic/chat", (message) => {
         const payloadData = JSON.parse(message.body);
         console.log("received message:", payloadData);
-        if (payloadData.success) { //! ONLY FOR SENDS RIGHT NOW. CHECK ACTION LATER
+        if (payloadData.success) {
             switch (payloadData.action) {
                 case "send":
                     setMessageList((prevMessages) => [...prevMessages, payloadData.message]);
@@ -63,11 +63,14 @@ const ChatComponent = () => {
                     scrollToBottom();
                     break;
                 case "delete":
-                    console.log(messageList);
-                    setMessageList((prevMessages) => prevMessages.filter(message => message.id !== payloadData.message.id));
-                    if (messageList.length > 0) { // check if we should say that it has set messages
-                        setHasMessages(true);
+                    const deleteId = Number(payloadData.message.id);
+                    const updatedList = messageList.filter(msg => Number(msg.id) !== deleteId);
+
+                    if (updatedList.length === 0) {
+                        setHasMessages(false);
                     }
+
+                    setMessageList(updatedList);
                     scrollToBottom();
                     break;
             }
@@ -76,7 +79,11 @@ const ChatComponent = () => {
 
     // message logic
     useEffect(() => {
-        getMessageHistory(); // uncomment when we get it working
+        const initialLoad = async () => {
+            await getMessageHistory();
+        };
+
+        initialLoad();
     }, []);
 
     useEffect(() => {
@@ -90,12 +97,15 @@ const ChatComponent = () => {
     const getMessageHistory = async () => {
         // http request
         // function that will get initial message history
-        // AND APPARENTLY I NEED TO TELL MY GROUP MEMBERS THAT IT DOES MORE THAN INITIAL MESSAGE HISTORY JESUS CHRIST
+        if (loadingMessages) {
+            console.log("already loading messages, request ignored");
+            return;
+        }
+
         setLoadingMessages(true);
 
         try {
-            const last_message = lastMessageId || "";
-            console.log(last_message);
+            const last_message = lastMessageId || null;
 
             const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/messages/history", {
                 method: "POST",
@@ -108,34 +118,35 @@ const ChatComponent = () => {
                 }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
                 throw new Error("failed to fetch messages");
-            } else {
-                console.log(data);
-                setLastMessageId(data);
-                if (data.length < 100) {
-                    setGotAllMessages(true);
-                    console.log("got all messages");
-                }
+            }
 
-                if (data.length > 0) { // update last message retrieved
-                    setLastMessageId(data[0].id);
-                    setHasMessages(true);
-                }
+            const data = await response.json();
 
-                // update message list and prevent duplicates
+            if (data.length < 100) {
+                setGotAllMessages(true);
+            }
+
+            if (data.length > 0) {
+                // store last id
+                setLastMessageId(data[0].id);
+                setHasMessages(true);
+            }
+
+            // append and remove duplicates
+            setMessageList((prevMessages) => {
                 const existingIds = new Set(prevMessages.map(msg => msg.id));
                 const uniqueNewMessages = data.filter(msg => !existingIds.has(msg.id));
-                return [...uniqueNewMessages, ...prevMessages];
-            }
-        } catch (error) {
-            console.log(error.message); // todo: turn into a status message
-        }
 
-        setLoadingMessages(false);
-        setLoading(false);
+                return [...uniqueNewMessages, ...prevMessages];
+            });
+        } catch (error) {
+            console.error("error fetching messages:", error.message); // todo: turn into an actual error message
+        } finally {
+            setLoadingMessages(false);
+            setLoading(false);
+        }
     }
     const sendMessage = (e) => {
         e.preventDefault();
@@ -154,7 +165,8 @@ const ChatComponent = () => {
 
     const deleteMessage = (e) => {
         e.preventDefault();
-        const id = e.target.id;
+        const id = e.target.getAttribute('data-message-id');
+
         if (!stompClient) {
             console.log("STOMP client not connected");
             return;
@@ -164,8 +176,6 @@ const ChatComponent = () => {
             destination: "/chat/message",
             body: JSON.stringify({ content: id, action: "delete", token: sessionStorage.getItem("token") }),
         });
-
-        setTimeout(getMessageHistory, 100);
     }
 
     const reportMessage = async (e) => {
@@ -210,7 +220,8 @@ const ChatComponent = () => {
                         :
                             <button
                                 className="ml-[80px] flex w-[90%] rounded p-5 items-center justify-center bg-[#1F1F1F] mt-5 justify-self-center font-casual"
-                                onClick={() => getMessageHistory()}
+                                onClick={getMessageHistory}
+                                disabled={loadingMessages}
                             >
                                 Get More Messages
                             </button>
@@ -219,28 +230,28 @@ const ChatComponent = () => {
                         <hr className="my-5 ml-[80px]"/>
                     </div>
 
-                    {hasMessages && messageList.map((message,index) => (
-                        <div className="messageContainer" key={index}>
+                    {hasMessages && messageList.map((message) => (
+                        <div className="messageContainer" key={message.id}>
                             <img src={online} alt="Online status"/>
                             <div className="message">
                                 <div className="messageHeader">
-                                    <span className="messageName">{message.name}</span>
+                                    <span className="messageName ml-2">{message.name}:</span>
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
                                         { sessionStorage.getItem("username") === message.name || sessionStorage.getItem("role") === "admin" ?
-                                            <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
+                                            <img src={trashIcon} alt="Delete" data-message-id={message.id} onClick={deleteMessage} />
                                             :
                                             <div />
                                         }
                                         { sessionStorage.getItem("username") !== message.name && sessionStorage.getItem("role") !== "admin" ?
-                                            <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
+                                            <img src={reportIcon} alt="Report" id={message.id} onClick={reportMessage} />
                                             :
                                             <div />
                                         }
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
-                                <p>{decodeHTMLEntities(message.text)}</p>
+                                <p className="ml-2 font-casual text-sm pt-1">{decodeHTMLEntities(message.text)}</p>
                             </div>
                         </div>
                     ))}
