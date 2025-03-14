@@ -6,6 +6,7 @@ import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
 import trashIcon from '../assets/graphics/trashIcon.png';
 import reportIcon from '../assets/graphics/flag.png.png';
+import profile from "../assets/graphics/profile-icon.png";
 
 
 // safe HTML entity decoder
@@ -155,6 +156,8 @@ const ChatComponent = () => {
             return;
         }
 
+        if (message.length === 0) return; // dont allow empty messages
+
         stompClient.publish({
             destination: "/chat/message",
             body: JSON.stringify({ content: message, action: "send", token: sessionStorage.getItem("token") }),
@@ -232,7 +235,7 @@ const ChatComponent = () => {
 
                     {hasMessages && messageList.map((message) => (
                         <div className="messageContainer" key={message.id}>
-                            <img src={online} alt="Online status"/>
+                            <img src={profile} alt="profile picture" className="max-w-[40px] max-h-[40px] mx-3"/>
                             <div className="message">
                                 <div className="messageHeader">
                                     <span className="messageName ml-2">{message.name}:</span>
@@ -251,7 +254,7 @@ const ChatComponent = () => {
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
-                                <p className="ml-2 font-casual text-sm pt-1">{decodeHTMLEntities(message.text)}</p>
+                                <p className="ml-2 font-casual text-sm pt-1 pb-2">{decodeHTMLEntities(message.text)}</p>
                             </div>
                         </div>
                     ))}
