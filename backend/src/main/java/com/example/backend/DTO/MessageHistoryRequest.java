@@ -1,13 +1,13 @@
 package com.example.backend.DTO;
 
 public class MessageHistoryRequest {
-    private Long messageId;
+    private Long message_id;
 
-    public Long getMessageId() {
-        return messageId;
+    public Long getMessage_id() {
+        return message_id;
     }
 
-    public void setMessageId(Long messageId) {
-        this.messageId = messageId;
+    public void setMessage_id(Long message_id) {
+        this.message_id = message_id;
     }
 }
