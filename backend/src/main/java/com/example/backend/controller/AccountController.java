@@ -3,6 +3,8 @@ package com.example.backend.controller;
 import com.example.backend.DTO.*;
 import com.example.backend.service.AccountService;
 import com.example.backend.service.ReCAPTCHAService;
+
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -204,5 +206,27 @@ public class AccountController {
         response.put("success","true");
         response.put("message","Logged out, bye bye!");
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/account-check")
+    public ResponseEntity<?> accountCheck(@Validated @RequestBody AccountCheckRequest request, BindingResult bindingResult) {
+        Map<String,String> response = new HashMap<>();
+
+        try{
+            if (bindingResult.hasErrors()){ //check if account check request is a valid account check request
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            if(accountService.accountCheck(request) == true); //pass request to accountService, returns true if account is found
+
+            response.put("success","true"); //create response to be returned
+            response.put("message","Account found.");
+            return ResponseEntity.ok(response); //return response object
+            
+        } catch (Exception e) { //account not found, catch error
+            response.put("success","false"); //bad response
+            response.put("message",e.getMessage()); //contain error
+            return ResponseEntity.badRequest().body(response); //return bad request describing error
+        }
     }
 }

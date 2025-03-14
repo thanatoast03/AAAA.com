@@ -5,6 +5,7 @@ import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.access.method.P;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -194,6 +195,13 @@ public class AccountService implements UserDetailsService {
 
         currentUser.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(currentUser);
+    }
+
+    public boolean accountCheck(AccountCheckRequest accountCheckRequest) throws Exception {
+        String username = accountCheckRequest.getUsername();
+        accountRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found")); //throws error if account not found
+        return true;
     }
 
     @Override

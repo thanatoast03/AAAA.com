@@ -1,12 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import './AdminPanel.css';
 import {useNavigate} from "react-router-dom";
+import AdminDeleteModal from '../modals/adminDeleteModal';
 
 const AdminPanel = () => {
   const [reportedMessages, setReportedMessages] = useState([]);
   const [reportedUsers, setReportedUsers] = useState([]);
   const [reportedMessageOccurrences, setReportedMessageOccurrences] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isAdminDeleteOpen,setIsAdminDeleteOpen] = useState(false);
+  const [name2, setName2] = useState("");
+  const [userNotFoundStatus,setUserNotFoundStatus] = useState("");
   const navigate = useNavigate();
 
   //! MIGHT NOT CORRECTLY VERIFY ADMIN STATUS. RELY ON BACKEND
@@ -56,6 +60,14 @@ const AdminPanel = () => {
       }
   };
 
+  const openAdminDeleteModal = () => {
+    setIsAdminDeleteOpen(true);
+  }
+
+  const closeAdminDeleteModal = () => {
+    setIsAdminDeleteOpen(false);
+  }
+
   useEffect(() => {
     verifyAdmin();
     fetchReportedMessages();
@@ -63,8 +75,34 @@ const AdminPanel = () => {
 
   if (loading) return <div>Loading...</div>;
 
+  const isLegitDelete = async() => {
+    console.log("running legit delete");
+    try{
+        const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/account-check",{
+            method: "POST",
+            headers: {
+                "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
+                "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({
+                "username" : name2
+            })
+        });
+        const data = await response.json()
+        if(response.ok){
+            openAdminDeleteModal();
+            setUserNotFoundStatus("");
+        } else {
+            setUserNotFoundStatus(data.message);
+        }
+    } catch(e) {
+        setUserNotFoundStatus("Error reaching backend: " + e);
+    }
+  }
+
   return (
       <div className="flex flex-col text-white font-casual w-full">
+        {isAdminDeleteOpen && <AdminDeleteModal closeDeleteModal={closeAdminDeleteModal} name2={name2}/>}
           <div className="admin-panel">
               <div className="section flex flex-col">
                   <h2 className="text-3xl sticky top-0 pb-2">Top Reported Messages:</h2>
@@ -112,8 +150,10 @@ const AdminPanel = () => {
                       placeholder="Type username here..."
                       className="text-black p-2 mb-2 rounded"
                       maxLength="32"
+                      onChange={(e)=>(setName2(e.target.value))}
                   />
-                  <button className="bg-red-600 p-2 rounded hover:bg-red-700">Delete Account</button>
+                  <h3 className='userNotFoundStatus'>{userNotFoundStatus}</h3>
+                  <button className="bg-red-600 p-2 rounded hover:bg-red-700" onClick={() => isLegitDelete()}>Delete Account</button>
               </div>
           </div>
       </div>

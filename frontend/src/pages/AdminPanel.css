@@ -22,7 +22,9 @@
     position: relative;
   }
   
-
+.userNotFoundStatus {
+  color: red;
+}
 
   
   
