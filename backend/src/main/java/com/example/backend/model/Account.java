@@ -26,6 +26,9 @@ public class Account {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages;
 
+    @Column(nullable = true, length = 1000)
+    private String token;
+
     public Long getId() {
         return id;
     }
@@ -66,5 +69,13 @@ public class Account {
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

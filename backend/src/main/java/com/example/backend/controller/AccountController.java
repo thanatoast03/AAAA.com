@@ -1,23 +1,17 @@
 package com.example.backend.controller;
 
-import com.example.backend.DTO.ChangeUsernameRequest;
-import com.example.backend.DTO.ChangeEmailRequest;
-import com.example.backend.DTO.ChangePasswordRequest;
-import com.example.backend.DTO.LoginRequest;
-import com.example.backend.DTO.RegisterRequest;
-import com.example.backend.DTO.DeleteAccountRequest;
+import com.example.backend.DTO.*;
 import com.example.backend.service.AccountService;
 import com.example.backend.service.ReCAPTCHAService;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/accounts")
@@ -178,7 +172,7 @@ public class AccountController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            accountService.deleteAccount(request,token); //pass request on to AccountService
+            accountService.deleteAccount(request); //pass request on to AccountService
 
             response.put("success","true"); //create response to be returned
             response.put("message","Account deleted. Bye bye!");

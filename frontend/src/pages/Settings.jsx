@@ -1,8 +1,8 @@
-import { React, useState } from "react";
+import {React, useState} from "react";
 import './settings.css';
 import online from '../assets/graphics/online.png';
 import DeleteAccountModal from "../modals/DeleteAccountModal";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 const Settings = () => {
     const [deleteOpen,setDeleteOpen] = useState(false);
@@ -84,7 +84,6 @@ const Settings = () => {
             setChangeEmailStatus(error.message);
         }
     }
-
     const changePassword = async() => {
         try{
             const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH+"/changePassword", {
@@ -129,13 +128,13 @@ const Settings = () => {
             const data = await response.json()
             if(response.ok){
                 setChangePasswordStatus("");
+                navigate("/");
                 sessionStorage.removeItem("token");
-                navigate("/login");
             }
         } catch (error) {
             setChangePasswordStatus("Failed to log out");
         }
-    } 
+    }
 
     return (
         <div className="settingsContainer">

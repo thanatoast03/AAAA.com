@@ -1,32 +1,25 @@
 package com.example.backend.service;
-import com.example.backend.DTO.LoginRequest;
-import com.example.backend.DTO.RegisterRequest;
-import com.example.backend.DTO.DeleteAccountRequest;
-import com.example.backend.DTO.ChangeUsernameRequest;
-import com.example.backend.DTO.ChangeEmailRequest;
-import com.example.backend.DTO.ChangePasswordRequest;
+
+import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
-
-import jakarta.transaction.Transactional;
-
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -61,17 +54,28 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
-    @Transactional
-    public void deleteAccount(DeleteAccountRequest deleteRequest, String token) {
+    public void deleteAccount(DeleteAccountRequest deleteRequest) throws Exception {
         String usernameToDelete = deleteRequest.getAccountToDelete();
+        boolean requesterIsAdmin = getLoggedInUser().getRole().equals("admin");
+
         if(usernameToDelete.isBlank()){
             usernameToDelete = getLoggedInUser().getUsername(); //deletes logged in user if no account is specified
+        } else if (!requesterIsAdmin) { // if blank and user requesting is not an admin
+            throw new RuntimeException("You are not allowed to delete this account");
         }
 
         Account accountToDelete = accountRepository.findByUsername(usernameToDelete).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        String previousToken = accountToDelete.getToken();
 
-        if(token != null){
-            jwtUtils.addToBlacklist(token);//add token to blacklist
+        boolean isDeleteAllowed =
+                accountToDelete.getId().equals(getLoggedInUser().getId()) || // requester deleting own account
+                !accountToDelete.getRole().equals("admin") && requesterIsAdmin; // admin deleting non-admin account
+        if (!isDeleteAllowed) {
+            throw new RuntimeException("You are not allowed to delete this account");
+        }
+
+        if(previousToken != null){
+            jwtUtils.addToBlacklist(previousToken); //add token to blacklist
         }
 
         accountRepository.delete(accountToDelete); //goodbye account :NimiSobYT:
@@ -81,6 +85,14 @@ public class AccountService implements UserDetailsService {
         if(token != null){
             jwtUtils.addToBlacklist(token);
         }
+
+        // find account
+        String email = jwtUtils.getEmail(token);
+        Account account = accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // set token to null in DB
+        account.setToken(null);
+        accountRepository.save(account);
     }
 
     public String loginAccount(LoginRequest loginRequest) {
@@ -114,7 +126,10 @@ public class AccountService implements UserDetailsService {
         claims.put("username", account.getUsername());
         claims.put("role", account.getRole());
 
-        return jwtUtils.generateToken(extraClaims, email, 86400000);
+        String token = jwtUtils.generateToken(extraClaims, email, 86400000);
+        replaceToken(account, token); // replaces token with new token
+
+        return token;
     }
 
     public String changeUsername(ChangeUsernameRequest usernameRequest) throws Exception{
@@ -138,7 +153,10 @@ public class AccountService implements UserDetailsService {
         claims.put("username", currentUser.getUsername());
         claims.put("role", currentUser.getRole());
 
-        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+        String token = jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+        replaceToken(currentUser, token); // replaces token with new token
+
+        return token;
     }
 
     public String changeEmail(ChangeEmailRequest emailRequest) throws Exception{
@@ -162,7 +180,10 @@ public class AccountService implements UserDetailsService {
         claims.put("username", currentUser.getUsername());
         claims.put("role", currentUser.getRole());
 
-        return jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+        String token = jwtUtils.generateToken(extraClaims, currentUser.getEmail(), 86400000);
+        replaceToken(currentUser, token); // replaces token with new token
+
+        return token;
     }
 
     public void changePassword(ChangePasswordRequest passwordRequest) throws Exception{
@@ -194,5 +215,15 @@ public class AccountService implements UserDetailsService {
         }
         
         return null;
+    }
+
+    private void replaceToken(Account account, String token) {
+        String previousToken = account.getToken();
+        if (previousToken != null) {
+            jwtUtils.addToBlacklist(previousToken); // invalidate previous token
+        }
+
+        account.setToken(token);
+        accountRepository.save(account); // replaces with token in db
     }
 }

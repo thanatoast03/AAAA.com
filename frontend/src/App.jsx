@@ -1,6 +1,6 @@
-import { React, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import './index.css';  // import tailwind css file
+import {React, useEffect, useState} from 'react';
+import {BrowserRouter, Navigate, Outlet, Route, Routes} from 'react-router-dom';
+import './index.css'; // import tailwind css file
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Navbar from './Navbar.jsx';
@@ -34,7 +34,7 @@ function ProtectedRoute() {
                 if (response.ok) {
                     setIsAuthenticated(true);
                 } else {
-                    setIsAuthenticated(false);
+                    throw new Error("not authenticated");
                 }
             } catch (error){
                 setIsAuthenticated(false);
@@ -61,9 +61,11 @@ function App() {
                         <Route index element={<Landing /> } />
                         <Route path="register" element={<Register />} />
                         <Route path="login" element={<Login />} />
-                        <Route path="chatroom" element={<Chatroom />}/>
-                        <Route path="settings" element={<Settings />}/>
-                        <Route path="admin-panel" element={<AdminPanel />}/>
+                        <Route element={<ProtectedRoute />} >
+                            <Route path="chatroom" element={<Chatroom />}/>
+                            <Route path="settings" element={<Settings />}/>
+                            <Route path="admin-panel" element={<AdminPanel />}/>
+                        </Route>
                     </Route>
                 </Routes>
             </BrowserRouter>
