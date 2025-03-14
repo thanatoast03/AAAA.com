@@ -3,6 +3,10 @@ import "../modals/deleteAccountModal.css";
 
 const AdminDeleteModal = ({ closeDeleteModal, name2 }) => {
 
+    // const adminDeleteAccount = async() => {
+    //     const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/")
+    // }
+
     return(
         <div className="deleteModalOverlay" onClick={closeDeleteModal}>
             <div className="deleteModalContent" onClick={(e) => e.stopPropagation()}>
