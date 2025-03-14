@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "messages")
 public class Message {
@@ -18,6 +21,9 @@ public class Message {
     @ManyToOne
     @JoinColumn(nullable = false, name = "sender_id") // foreign key sender links to the Account primary id
     private Account sender; // i think get this from the token
+
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportedMessage> reportedMessages = new ArrayList<>();
 
     @Column(nullable = false)
     private String time;
@@ -63,5 +69,19 @@ public class Message {
 
     public void setSender(Account sender) {
         this.sender = sender;
+    }
+
+    public List<ReportedMessage> getReportedMessages() {
+        return reportedMessages;
+    }
+
+    public void addReportedMessage(ReportedMessage reportedMessage) {
+        reportedMessages.add(reportedMessage);
+        reportedMessage.setMessage(this);
+    }
+
+    public void removeReportedMessage(ReportedMessage reportedMessage) {
+        reportedMessages.remove(reportedMessage);
+        reportedMessage.setMessage(null);
     }
 }
