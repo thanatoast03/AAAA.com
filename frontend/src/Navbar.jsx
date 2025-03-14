@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 
 
 const Navbar = () => {
@@ -58,10 +58,14 @@ const Navbar = () => {
 
                 const data = await response.json();
                 setUser(data);
+                sessionStorage.setItem("username", data.username);
+                sessionStorage.setItem("role", data.role);
                 setIsAdmin(data.role === "admin");
             } catch (error) {
                 console.error("Error verifying user:", error);
+                sessionStorage.removeItem("username");
                 sessionStorage.removeItem("token");
+                sessionStorage.removeItem("role");
                 setUser(null);
                 setIsAdmin(false);
                 if (["/chatroom", "/settings", "/admin-panel"].includes(location.pathname)) {

@@ -194,6 +194,7 @@ const ChatComponent = () => {
         } catch (error) {
             console.log(error.message);
             // todo: turn into status message
+            //a
         }
     }
 
@@ -226,8 +227,16 @@ const ChatComponent = () => {
                                     <span className="messageName">{message.name}</span>
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
-                                        <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
-                                        <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
+                                        { sessionStorage.getItem("username") === message.name || sessionStorage.getItem("role") === "admin" ?
+                                            <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
+                                            :
+                                            <div />
+                                        }
+                                        { sessionStorage.getItem("username") !== message.name && sessionStorage.getItem("role") !== "admin" ?
+                                            <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
+                                            :
+                                            <div />
+                                        }
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
