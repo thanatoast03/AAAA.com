@@ -17,18 +17,18 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         SELECT m.id AS id, m.text AS text, m.time AS time, a.username AS name
         FROM Message m
         JOIN m.sender a    
-        ORDER BY m.id ASC
+        ORDER BY m.id DESC
     """)
-    List<MessageDTO> findLast100Messages(Pageable pageable); // get last 100 messages
+    List<MessageDTO> findLast100Messages(Pageable pageable);
 
     @Query("""
         SELECT m.id AS id, m.text AS text, m.time AS time, a.username AS name
         FROM Message m
         JOIN m.sender a
-        WHERE m.id < :messageId
-        ORDER BY m.id ASC
+        WHERE m.id < :message_id
+        ORDER BY m.id DESC
     """)
-    List<MessageDTO> findTop100BeforeMessageId(@Param("messageId") Long messageId, Pageable pageable);
+    List<MessageDTO> findTop100BeforeMessageId(@Param("message_id") Long messageId, Pageable pageable);
 
     @Query("""
         SELECT m.id AS id, m.text AS text, m.time AS time, a.username AS name

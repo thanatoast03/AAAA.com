@@ -130,12 +130,17 @@ public class MessageService {
     }
 
     public List<MessageDTO> getMessageHistory(MessageHistoryRequest messageHistoryRequest) {
+        List<MessageDTO> messages;
         // get the top 100 messages before the id
-        if (messageHistoryRequest.getMessageId() == null) { // if first request, give last 100 messages
-            return messageRepository.findLast100Messages(PageRequest.of(0, 100));
+        System.out.println("message id: " + messageHistoryRequest.getMessage_id());
+        if (messageHistoryRequest.getMessage_id() == null) { // if first request, give last 100 messages
+            messages = messageRepository.findLast100Messages(PageRequest.of(0, 100));
         } else {
-            return messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessageId(), PageRequest.of(0, 100));
+            messages = messageRepository.findTop100BeforeMessageId(messageHistoryRequest.getMessage_id(), PageRequest.of(0, 100));
         }
+
+        Collections.reverse(messages); // preserve ordering w/ new message logic
+        return messages;
     }
 
     public List<ReportedMessageDTO> getReportedMessages() {

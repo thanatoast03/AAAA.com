@@ -1,6 +1,6 @@
-import { React, useState, useEffect, useRef } from "react";
-import { StompSessionProvider, useStompClient, useSubscription } from "react-stomp-hooks";
-import { useNavigate } from "react-router-dom";
+import {React, useEffect, useRef, useState} from "react";
+import {StompSessionProvider, useStompClient, useSubscription} from "react-stomp-hooks";
+import {useNavigate} from "react-router-dom";
 import './chatroom.css';
 import online from '../assets/graphics/online.png';
 import addImg from '../assets/graphics/addImage.png';
@@ -90,11 +90,12 @@ const ChatComponent = () => {
     const getMessageHistory = async () => {
         // http request
         // function that will get initial message history
-        setMessageList([]);
+        // AND APPARENTLY I NEED TO TELL MY GROUP MEMBERS THAT IT DOES MORE THAN INITIAL MESSAGE HISTORY JESUS CHRIST
         setLoadingMessages(true);
 
         try {
             const last_message = lastMessageId || "";
+            console.log(last_message);
 
             const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/messages/history", {
                 method: "POST",
@@ -115,7 +116,7 @@ const ChatComponent = () => {
                 console.log(data);
                 setLastMessageId(data);
                 if (data.length < 100) {
-                    setGotAllMessages(true); // todo: use this flag to hide button and let user know all messages have been retrieved
+                    setGotAllMessages(true);
                     console.log("got all messages");
                 }
 
@@ -126,9 +127,7 @@ const ChatComponent = () => {
 
                 // update message list
                 setMessageList((prevMessages) => {
-                    const prevMsgIDs = new Set(prevMessages.map(msg => msg.id)); // previous message IDs
-                    const newMessages = data.filter(msg => !prevMsgIDs.has(msg.id)); // only add new ones
-                    return [...newMessages, ...prevMessages]; // merge with no dupes
+                    return [...data, ...prevMessages]; // merge with no dupes
                 }); 
             }
         } catch (error) {
@@ -195,15 +194,31 @@ const ChatComponent = () => {
         } catch (error) {
             console.log(error.message);
             // todo: turn into status message
+            //a
         }
     }
 
     if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
 
     return (
-        <div className="chatroomContainer">
+        <div className="chatroomContainer text-white">
             <div className="messagePanel">
                 <div className="messageArea">
+                    <div className="w-[90%]">
+                        {gotAllMessages ?
+                            <p className="flex ml-[80px] w-[90%] justify-center items-center justify-self-center mt-5">No more messages.</p>
+                        :
+                            <button
+                                className="ml-[80px] flex w-[90%] rounded p-5 items-center justify-center bg-[#1F1F1F] mt-5 justify-self-center font-casual"
+                                onClick={() => getMessageHistory()}
+                            >
+                                Get More Messages
+                            </button>
+                        }
+
+                        <hr className="my-5 ml-[80px]"/>
+                    </div>
+
                     {hasMessages && messageList.map((message,index) => (
                         <div className="messageContainer" key={index}>
                             <img src={online} alt="Online status"/>
@@ -212,8 +227,16 @@ const ChatComponent = () => {
                                     <span className="messageName">{message.name}</span>
                                     <div className="timeDeleteFlag">
                                         <span className="messageTime">{message.time}</span>
-                                        <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
-                                        <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
+                                        { sessionStorage.getItem("username") === message.name || sessionStorage.getItem("role") === "admin" ?
+                                            <img src={trashIcon} alt="Delete" id={message.id.toString()} onClick={deleteMessage} />
+                                            :
+                                            <div />
+                                        }
+                                        { sessionStorage.getItem("username") !== message.name && sessionStorage.getItem("role") !== "admin" ?
+                                            <img src={reportIcon} alt="Report" id={message.id.toString()} onClick={reportMessage} />
+                                            :
+                                            <div />
+                                        }
                                     </div>
                                 </div>
                                 {/* decode HTML safely? */}
@@ -223,7 +246,7 @@ const ChatComponent = () => {
                     ))}
                     <div ref={messagesEndRef}/>
                 </div>
-                <form className="sendArea" onSubmit={sendMessage}>
+                <form className="sendArea font-casual" onSubmit={sendMessage}>
                     <input type="text" placeholder="Type message here..." value={message} onChange={(e) => setMessage(e.target.value)} maxLength="2000" />
                     <button type="submit"><img src={addImg} alt="Add"/></button>
                 </form>
