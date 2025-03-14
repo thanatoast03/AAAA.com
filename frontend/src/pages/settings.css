@@ -1,0 +1,92 @@
+.settingsContainer {
+    display: flex;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/** floating rectangle */
+.accountInfo {
+    display: flex;
+    height: 80%;
+    margin-top: 5%;
+    width: 80%;
+    background-color: #2A2A2A;
+}
+
+/** left area (label, profile picture, change button) */
+.accountSettings {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex: 5;
+    align-items: center;
+}
+
+.accountSettings h1 {
+    font-size: 300%;
+    margin-top: 5%;
+}
+
+.accountSettings img {
+    margin-top: -10%;
+    width: 70%;
+}
+
+.settingsPfp {
+    margin-top: -10%;
+    font-size: 200%;
+    background-color: #585656;
+    padding: 1%;
+    border-radius: 4px;
+}
+
+.settingsLogout {
+    background-color: #EA5C52;
+    height: 8%;
+    width: 18%;
+    border-radius: 4px;
+    color: white;
+    font-family: 'Kadwa',serif;
+    font-size: 200%;
+    margin-top: 14%;
+    margin-right: 20%;
+}
+
+/** right area (username, password, email, save) */
+.accountPanel {
+    color: white;
+    display: flex;
+    font-size: 220%;
+    flex: 5;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.settingsSave {
+    background-color: #1AC472;
+    padding: 1%;
+    border-radius: 4px;
+}
+
+.accountOption {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    margin-bottom: 5%;
+    color: white;
+}
+
+.accountOption input {
+    background-color: #443F3F;
+}
+
+.settingsDelete {
+    margin-top: 20%;
+    background-color: #9C1A10;
+    padding: 1%;
+    border-radius: 4px;
+    font-family: 'Kadwa',serif;
+}

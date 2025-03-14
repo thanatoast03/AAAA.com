@@ -1,0 +1,157 @@
+import React, {useEffect, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
+
+
+const Navbar = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [user, setUser] = useState(null); 
+    const [isAdmin, setIsAdmin] = useState(false); 
+
+    const handleRegisterClick = () => {
+        navigate("/register");
+    };
+
+    const navigateLogin = () => {
+        navigate("/login");
+    }
+
+    const navigateSettings = () => {
+        navigate("/settings");
+    }
+
+    const navigateChatroom = () => {
+        navigate("/chatroom");
+    }
+
+    const navigateAdmin = () => {
+        navigate("/admin-panel");
+    }
+
+    const navigateLanding = () => {
+        navigate("/");
+    }
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const token = sessionStorage.getItem("token");
+
+            if (!token) {
+                setUser(null);
+                setIsAdmin(false);
+                if (["/chatroom", "/settings", "/admin-panel"].includes(location.pathname)) {
+                    navigate("/");
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(process.env.REACT_APP_FETCH_PATH + "/verify/", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) throw new Error("Invalid token");
+
+                const data = await response.json();
+                setUser(data);
+                sessionStorage.setItem("username", data.username);
+                sessionStorage.setItem("role", data.role);
+                setIsAdmin(data.role === "admin");
+            } catch (error) {
+                console.error("Error verifying user:", error);
+                sessionStorage.removeItem("username");
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("role");
+                setUser(null);
+                setIsAdmin(false);
+                if (["/chatroom", "/settings", "/admin-panel"].includes(location.pathname)) {
+                    navigate("/");
+                }
+            }
+        };
+
+        fetchUser();
+    }, [navigate, location.pathname]);
+
+    return (
+        <nav className="text-white flex justify-between bg-[#202020] text-3xl shadow-xl">
+            <h1 className="py-3 px-5 sm:ml-5 hover:cursor-pointer" onClick={navigateLanding}>AAAA</h1>
+            <div className="flex flex-row text-2xl px-5 sm:mr-2">
+                {user ? (
+                    <>
+                        {location.pathname === '/chatroom' && ( 
+                            <>
+                                {isAdmin && (
+                                    <>
+                                        <h1 className="p-3 hover:cursor-pointer" onClick={navigateAdmin}>Admin Panel</h1>
+                                        <h1 className="py-3">|</h1>
+                                    </>
+                                )}
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateSettings}>Settings</h1>
+                            </>
+                        )}
+                        {location.pathname === '/settings' && ( 
+                            <>
+                                {isAdmin && (
+                                    <>
+                                        <h1 className="p-3 hover:cursor-pointer" onClick={navigateAdmin}>Admin Panel</h1>
+                                        <h1 className="py-3">|</h1>
+                                    </>
+                                )}
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {location.pathname === '/' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {location.pathname === '/login' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {location.pathname === '/register' && ( 
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                            </>
+                        )}
+                        {isAdmin && (
+                            <>
+                                {location.pathname === '/admin-panel' && (
+                                    <>
+                                        <h1 className="p-3 hover:cursor-pointer" onClick={navigateChatroom}>Chatroom</h1>
+                                        <h1 className="py-3">|</h1>
+                                        <h1 className="p-3 hover:cursor-pointer" onClick={navigateSettings}>Settings</h1>
+                                    </>
+                                )}
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <>  
+                        {location.pathname === '/' && (
+                            <>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={handleRegisterClick}>Register</h1>
+                                <h1 className="py-3">|</h1>
+                                <h1 className="p-3 hover:cursor-pointer" onClick={navigateLogin}>Login</h1>
+                            </>
+                        )}
+                        {location.pathname === '/register' && (
+                            <h1 className="p-3 hover:cursor-pointer" onClick={navigateLogin}>Login</h1>
+                        )}
+                        {location.pathname === '/login' && (
+                            <h1 className="p-3 hover:cursor-pointer" onClick={handleRegisterClick}>Register</h1>
+                        )}
+                    </>
+                )}
+            </div>
+        </nav>
+    );
+};
+
+export default Navbar;

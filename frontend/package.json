@@ -1,0 +1,26 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "source": "index.js",
+  "scripts": {
+    "start": "rm -rf .parcel-cache && parcel src/index.html",
+    "build": "rm -rf .parcel-cache && parcel build src/index.html --dist-dir dist --public-url /",
+    "clean": "rm -rf node_modules && rm -rf dist && npm cache clean --force",
+    "reinstall": "npm run clean && npm install --no-fund --no-audit --legacy-peer-deps && npm prune"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "parcel": "^2.13.3",
+    "process": "^0.11.10",
+    "tailwindcss": "^3.4.16"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.29.0",
+    "react-stomp-hooks": "^3.0.1"
+  }
+}

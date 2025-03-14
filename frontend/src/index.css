@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'JacquesFrancois';
+    src: url('fonts/JacquesFrancois-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+@font-face {
+    font-family: 'Kadwa';
+    src: url('fonts/Kadwa-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Kadwa';
+    src: url('fonts/Kadwa-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Apply Inter as the default font */
+body {
+    font-family: 'JacquesFrancois';
+}
