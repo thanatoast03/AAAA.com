@@ -125,10 +125,10 @@ const ChatComponent = () => {
                     setHasMessages(true);
                 }
 
-                // update message list
-                setMessageList((prevMessages) => {
-                    return [...data, ...prevMessages]; // merge with no dupes
-                }); 
+                // update message list and prevent duplicates
+                const existingIds = new Set(prevMessages.map(msg => msg.id));
+                const uniqueNewMessages = data.filter(msg => !existingIds.has(msg.id));
+                return [...uniqueNewMessages, ...prevMessages];
             }
         } catch (error) {
             console.log(error.message); // todo: turn into a status message
