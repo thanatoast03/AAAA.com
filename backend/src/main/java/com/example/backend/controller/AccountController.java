@@ -159,7 +159,7 @@ public class AccountController {
         Map<String,String> response = new HashMap<>();
 
         try{
-            if (bindingResult.hasErrors()){ //check if password request is a valid password request
+            if (bindingResult.hasErrors()){ //check if delete account request is a valid DeleteAccount request
                 throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
             }
 

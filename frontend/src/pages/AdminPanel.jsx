@@ -11,6 +11,7 @@ const AdminPanel = () => {
   const [isAdminDeleteOpen,setIsAdminDeleteOpen] = useState(false);
   const [name2, setName2] = useState("");
   const [userNotFoundStatus,setUserNotFoundStatus] = useState("");
+  const [userDeletedStatus,setUserDeletedStatus] = useState("");
   const navigate = useNavigate();
 
   //! MIGHT NOT CORRECTLY VERIFY ADMIN STATUS. RELY ON BACKEND
@@ -68,6 +69,14 @@ const AdminPanel = () => {
     setIsAdminDeleteOpen(false);
   }
 
+  const setUserDeleted = (message) => {
+    setUserDeletedStatus(message);
+  }
+
+  const setUserNotDeleted = (message) => {
+    setUserDeletedStatus(message);
+  }
+
   useEffect(() => {
     verifyAdmin();
     fetchReportedMessages();
@@ -76,7 +85,6 @@ const AdminPanel = () => {
   if (loading) return <div>Loading...</div>;
 
   const isLegitDelete = async() => {
-    console.log("running legit delete");
     try{
         const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/account-check",{
             method: "POST",
@@ -93,6 +101,7 @@ const AdminPanel = () => {
             openAdminDeleteModal();
             setUserNotFoundStatus("");
         } else {
+            setUserDeleted("");
             setUserNotFoundStatus(data.message);
         }
     } catch(e) {
@@ -102,7 +111,12 @@ const AdminPanel = () => {
 
   return (
       <div className="flex flex-col text-white font-casual w-full">
-        {isAdminDeleteOpen && <AdminDeleteModal closeDeleteModal={closeAdminDeleteModal} name2={name2}/>}
+        {isAdminDeleteOpen && <AdminDeleteModal 
+            closeDeleteModal={closeAdminDeleteModal} 
+            name2={name2}
+            setUserDeleted={setUserDeleted}
+            setUserNotDeleted={setUserNotDeleted}
+        />}
           <div className="admin-panel">
               <div className="section flex flex-col">
                   <h2 className="text-3xl sticky top-0 pb-2">Top Reported Messages:</h2>
@@ -153,6 +167,7 @@ const AdminPanel = () => {
                       onChange={(e)=>(setName2(e.target.value))}
                   />
                   <h3 className='userNotFoundStatus'>{userNotFoundStatus}</h3>
+                  <h3 className='userDeletedStatus'>{userDeletedStatus}</h3>
                   <button className="bg-red-600 p-2 rounded hover:bg-red-700" onClick={() => isLegitDelete()}>Delete Account</button>
               </div>
           </div>
