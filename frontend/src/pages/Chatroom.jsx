@@ -15,7 +15,6 @@ const decodeHTMLEntities = (text) => {
     textArea.innerHTML = text;
     return textArea.value;
 };
-
 const Chatroom = () => {
     const navigate = useNavigate();
 
@@ -31,8 +30,12 @@ const Chatroom = () => {
             connectHeaders={{'Authorization': 'Bearer ' + token }}
             heartbeatIncoming={4000}
             heartbeatOutgoing={4000}
-            onConnect={() => console.log("connected to websocket") }
-            onDisconnect={() => console.log("disconnected from websocket")}
+            onConnect={() => {
+                console.log("connected to websocket");
+            }}
+            onDisconnect={() => {
+                console.log("disconnected from websocket");
+            }}
             onStompError={(frame) => console.error("error:", frame)}
         >
             <ChatComponent />
@@ -44,7 +47,6 @@ const ChatComponent = () => {
     const [messageList, setMessageList] = useState([]); //list to hold all messages
     const [onlineList, setOnlineList] = useState([]); //list of all members who are online
     const [hasMessages, setHasMessages] = useState(false); //have any messages been sent ever?
-    const [anyOnline, setAnyOnline] = useState(false); //is anyone online?
     const [message, setMessage] = useState("");
     const [lastMessageId, setLastMessageId] = useState(null);
     const [gotAllMessages, setGotAllMessages] = useState(false);
@@ -53,6 +55,17 @@ const ChatComponent = () => {
     const messagesEndRef = useRef(null);
     const stompClient = useStompClient();
 
+    const broadcastStatus = (action) => {
+        if (!stompClient) {
+            console.error("STOMP client not connected");
+            return;
+        }
+
+        stompClient.publish({
+            destination: "/chat/online",
+            body: JSON.stringify({ action: action, token: sessionStorage.getItem("token") }),
+        });
+    }
     useSubscription("/topic/chat", (message) => {
         const payloadData = JSON.parse(message.body);
         console.log("received message:", payloadData);
@@ -77,6 +90,45 @@ const ChatComponent = () => {
             }
         }
     });
+
+    useSubscription("/topic/online", (message) => {
+        const payloadData = JSON.parse(message.body);
+        switch (payloadData.action) {
+            case "join": // if someone joins, add them to online member list and let them know you exist
+                setOnlineList(currentList => {
+                    const uniqueSet = new Set([...currentList, payloadData.username]);
+                    return Array.from(uniqueSet);
+                });
+                broadcastStatus("exists");
+                break;
+            case "exists":
+                console.log("received user already connected: " + payloadData.username);
+                setOnlineList(currentList => {
+                    const uniqueSet = new Set([...currentList, payloadData.username]);
+                    if (uniqueSet.size === currentList.length) { // if no changes, no need for rerender
+                        return currentList;
+                    }
+                    return Array.from(uniqueSet);
+                });
+                break;
+            case "leave": // remove person from the online list if they leave
+                const username = payloadData.username;
+                const updatedList = onlineList.filter(person => person !== username);
+                setOnlineList(updatedList);
+                break;
+        }
+    })
+
+    // join logic; only runs when stompClient first initialized
+    useEffect(() => {
+        if (stompClient){
+            broadcastStatus("join");
+
+            return () => {
+                broadcastStatus("leave");
+            }
+        }
+    }, [stompClient]);
 
     // message logic
     useEffect(() => {
@@ -211,7 +263,7 @@ const ChatComponent = () => {
         }
     }
 
-    if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
+    if (loading) return <div className="flex justify-center items-center h-full text-white">Loading...</div>;
 
     return (
         <div className="chatroomContainer text-white">
@@ -269,9 +321,9 @@ const ChatComponent = () => {
                 <input type="text" placeholder="Search for a member's messages..."></input>
                 <h1>Members Online:</h1>
                 <div className="onlineMembers">
-                    {anyOnline ? (
+                    { onlineList.length !== 0 ? (
                         onlineList.map((name,index) => (
-                            <div key={index} className="memberCell">
+                            <div key={name} className="memberCell">
                                 <p>{name}</p>
                                 <img src={online} alt="Online"></img>
                             </div>
