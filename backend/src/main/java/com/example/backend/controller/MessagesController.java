@@ -52,6 +52,7 @@ public class MessagesController {
     @GetMapping("/reported")
     public ResponseEntity<Map<String, Object>> getReportedMessages() {
         try {
+            // todo: NEEDS ADMIN CHECK
             List<ReportedMessageDTO> reportedMessages = messageService.getReportedMessages();
             Map<String, Object> response = messageService.compileReportedMessages(reportedMessages);
             return ResponseEntity.ok(response);
@@ -75,6 +76,25 @@ public class MessagesController {
         }
     }
 
+    @PostMapping("/delete")
+    public ResponseEntity<Map<String, String>> deleteMessage(@Validated @RequestBody DeleteMessageRequest request, BindingResult bindingResult, @RequestHeader("Authorization") String authHeader){
+        Map<String, String> response = new HashMap<>();
+        try {
+            if (bindingResult.hasErrors()) {
+                throw new Exception(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            Long messageDeletedId = messageService.httpDeleteMessage(request, authHeader);
+
+            response.put("success","true");
+            response.put("id", messageDeletedId.toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success","false");
+            response.put("message",e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }
     
 

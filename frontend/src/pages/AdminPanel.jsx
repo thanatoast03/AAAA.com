@@ -53,6 +53,7 @@ const AdminPanel = () => {
 
           const data = await response.json();
           setReportedMessages(data.reported_messages);
+          console.log(data.reported_messages);
           setReportedUsers(Object.entries(data.reported_users));
           setReportedMessageOccurrences(data.reported_message_occurrences);
           setLoading(false);
@@ -110,6 +111,38 @@ const AdminPanel = () => {
     }
   }
 
+  const deleteMessage = async (e) => {
+      e.preventDefault();
+      const id = e.target.getAttribute('delete-message-id');
+      console.log(id);
+
+      try {
+          const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/messages/delete', {
+              method: "POST",
+              headers: {
+                  "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
+                  "Content-Type" : "application/json"
+              },
+              body: JSON.stringify({
+                  "id": id
+              })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok){
+              throw new Error(data.message);
+          }
+
+          console.log("reported messages list size: ", reportedMessages.length);
+          const updatedList = reportedMessages.filter(reportedMessage => Number(reportedMessage.messageId) !== Number(data.id));
+          console.log("reported messages list size after removal: ", updatedList.length);
+          setReportedMessages(updatedList);
+      } catch (error) {
+          console.log(error);
+      }
+  };
+
   return (
       <div className="flex flex-col text-white font-casual w-full">
         {isAdminDeleteOpen && <AdminDeleteModal 
@@ -126,12 +159,12 @@ const AdminPanel = () => {
                           <p>No reported messages</p>
                       ) : (
                           reportedMessages.map((message) => (
-                            <div key={message.id} id={message.id} className="mb-4 p-3 border rounded relative">
+                            <div key={message.id} className="mb-4 p-3 border rounded relative">
                                 <div className="flex-row text-xl">
                                     <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
                                 </div>
                                 <p>{message.messageText}</p>
-                                <img src={trashcan} onClick={(e) => deleteMessage(e)}className="absolute top-2 right-2 w-7 h-7 cursor-pointer" />
+                                <img src={trashcan} delete-message-id={message.messageId} onClick={deleteMessage} className="absolute top-2 right-2 w-7 h-7 cursor-pointer" />
                             </div>
                           ))
                       )}
