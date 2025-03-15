@@ -114,7 +114,6 @@ const AdminPanel = () => {
   const deleteMessage = async (e) => {
       e.preventDefault();
       const id = e.target.getAttribute('delete-message-id');
-      console.log(id);
 
       try {
           const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/messages/delete', {
@@ -134,9 +133,7 @@ const AdminPanel = () => {
               throw new Error(data.message);
           }
 
-          console.log("reported messages list size: ", reportedMessages.length);
           const updatedList = reportedMessages.filter(reportedMessage => Number(reportedMessage.messageId) !== Number(data.id));
-          console.log("reported messages list size after removal: ", updatedList.length);
           setReportedMessages(updatedList);
       } catch (error) {
           console.log(error);
