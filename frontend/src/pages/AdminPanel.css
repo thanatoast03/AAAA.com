@@ -26,6 +26,10 @@
   color: red;
 }
 
+.userDeletedStatus {
+  color: #1AC472;
+}
+
   
   
   .delete-input-container {

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './AdminPanel.css';
 import {useNavigate} from "react-router-dom";
+import trashcan from "../assets/graphics/trashIcon.png";
 import AdminDeleteModal from '../modals/adminDeleteModal';
 
 const AdminPanel = () => {
@@ -11,6 +12,7 @@ const AdminPanel = () => {
   const [isAdminDeleteOpen,setIsAdminDeleteOpen] = useState(false);
   const [name2, setName2] = useState("");
   const [userNotFoundStatus,setUserNotFoundStatus] = useState("");
+  const [userDeletedStatus,setUserDeletedStatus] = useState("");
   const navigate = useNavigate();
 
   //! MIGHT NOT CORRECTLY VERIFY ADMIN STATUS. RELY ON BACKEND
@@ -51,6 +53,7 @@ const AdminPanel = () => {
 
           const data = await response.json();
           setReportedMessages(data.reported_messages);
+          console.log(data.reported_messages);
           setReportedUsers(Object.entries(data.reported_users));
           setReportedMessageOccurrences(data.reported_message_occurrences);
           setLoading(false);
@@ -68,6 +71,14 @@ const AdminPanel = () => {
     setIsAdminDeleteOpen(false);
   }
 
+  const setUserDeleted = (message) => {
+    setUserDeletedStatus(message);
+  }
+
+  const setUserNotDeleted = (message) => {
+    setUserDeletedStatus(message);
+  }
+
   useEffect(() => {
     verifyAdmin();
     fetchReportedMessages();
@@ -76,7 +87,6 @@ const AdminPanel = () => {
   if (loading) return <div>Loading...</div>;
 
   const isLegitDelete = async() => {
-    console.log("running legit delete");
     try{
         const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/account-check",{
             method: "POST",
@@ -93,6 +103,7 @@ const AdminPanel = () => {
             openAdminDeleteModal();
             setUserNotFoundStatus("");
         } else {
+            setUserDeleted("");
             setUserNotFoundStatus(data.message);
         }
     } catch(e) {
@@ -100,9 +111,43 @@ const AdminPanel = () => {
     }
   }
 
+  const deleteMessage = async (e) => {
+      e.preventDefault();
+      const id = e.target.getAttribute('delete-message-id');
+
+      try {
+          const response = await fetch(process.env.REACT_APP_FETCH_PATH + '/messages/delete', {
+              method: "POST",
+              headers: {
+                  "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
+                  "Content-Type" : "application/json"
+              },
+              body: JSON.stringify({
+                  "id": id
+              })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok){
+              throw new Error(data.message);
+          }
+
+          const updatedList = reportedMessages.filter(reportedMessage => Number(reportedMessage.messageId) !== Number(data.id));
+          setReportedMessages(updatedList);
+      } catch (error) {
+          console.log(error);
+      }
+  };
+
   return (
       <div className="flex flex-col text-white font-casual w-full">
-        {isAdminDeleteOpen && <AdminDeleteModal closeDeleteModal={closeAdminDeleteModal} name2={name2}/>}
+        {isAdminDeleteOpen && <AdminDeleteModal 
+            closeDeleteModal={closeAdminDeleteModal} 
+            name2={name2}
+            setUserDeleted={setUserDeleted}
+            setUserNotDeleted={setUserNotDeleted}
+        />}
           <div className="admin-panel">
               <div className="section flex flex-col">
                   <h2 className="text-3xl sticky top-0 pb-2">Top Reported Messages:</h2>
@@ -111,12 +156,13 @@ const AdminPanel = () => {
                           <p>No reported messages</p>
                       ) : (
                           reportedMessages.map((message) => (
-                              <div key={message.id} id={message.id} className="mb-4 p-3 border rounded">
-                                  <div className="flex-row text-xl">
-                                      <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
-                                  </div>
-                                  <p>{message.messageText}</p>
-                              </div>
+                            <div key={message.id} className="mb-4 p-3 border rounded relative">
+                                <div className="flex-row text-xl">
+                                    <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
+                                </div>
+                                <p>{message.messageText}</p>
+                                <img src={trashcan} delete-message-id={message.messageId} onClick={deleteMessage} className="absolute top-2 right-2 w-7 h-7 cursor-pointer" />
+                            </div>
                           ))
                       )}
                   </div>
@@ -153,6 +199,7 @@ const AdminPanel = () => {
                       onChange={(e)=>(setName2(e.target.value))}
                   />
                   <h3 className='userNotFoundStatus'>{userNotFoundStatus}</h3>
+                  <h3 className='userDeletedStatus'>{userDeletedStatus}</h3>
                   <button className="bg-red-600 p-2 rounded hover:bg-red-700" onClick={() => isLegitDelete()}>Delete Account</button>
               </div>
           </div>

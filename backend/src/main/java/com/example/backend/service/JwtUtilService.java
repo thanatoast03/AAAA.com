@@ -1,18 +1,15 @@
 package com.example.backend.service;
 
+import com.example.backend.model.BlacklistedToken;
+import com.example.backend.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
-import javax.crypto.SecretKey;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.example.backend.model.BlacklistedToken;
-import com.example.backend.repository.TokenRepository;
-
+import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -99,5 +96,14 @@ public class JwtUtilService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public String getToken(String authHeader){
+        String token = null;
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        return token;
     }
 }

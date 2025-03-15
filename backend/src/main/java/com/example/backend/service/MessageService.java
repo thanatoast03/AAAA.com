@@ -22,12 +22,14 @@ public class MessageService {
     private final AccountRepository accountRepository;
     private final ReportedMessageRepository reportedMessageRepository;
     private final AccountService accountService;
+    private final JwtUtilService jwtUtilService;
 
-    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository) {
+    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository, JwtUtilService jwtUtilService) {
         this.messageRepository = messageRepository;
         this.accountRepository = accountRepository;
         this.reportedMessageRepository = reportedMessageRepository;
         this.accountService = accountService;
+        this.jwtUtilService = jwtUtilService;
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
@@ -180,6 +182,26 @@ public class MessageService {
         Account account = accountRepository.findByUsername(messagesRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("couldn't find user with that username"));
         return messageRepository.findAllBySender(account);
+    }
+
+    public Long httpDeleteMessage(DeleteMessageRequest deleteRequest, String authHeader){
+        Long id = deleteRequest.getId();
+        String token = jwtUtilService.getToken(authHeader);
+        String email = jwtUtilService.getEmail(token);
+        boolean success = false;
+
+        // if requester is admin
+        accountRepository.findByEmail(email) // search for requester in account DB
+            .ifPresentOrElse(account -> { // if requester found
+                if (!account.getRole().equals("admin")) { throw new RuntimeException("requester not an admin"); }
+                messageRepository.findById(id).ifPresentOrElse(m -> { // find message by ID
+                    messageRepository.delete(m); // they can delete the message
+                    System.out.println("successfully deleted message");
+                }, () -> { throw new RuntimeException("couldn't find message with that ID");});
+            }, () -> { throw new RuntimeException("couldn't find requester"); }
+        );
+
+        return id;
     }
 }
 

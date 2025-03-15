@@ -1,11 +1,33 @@
 import React from "react";
 import "../modals/deleteAccountModal.css";
 
-const AdminDeleteModal = ({ closeDeleteModal, name2 }) => {
+const AdminDeleteModal = ({ closeDeleteModal, name2, setUserDeleted, setUserNotDeleted }) => {
 
-    // const adminDeleteAccount = async() => {
-    //     const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/")
-    // }
+    const adminDeleteAccount = async() => {
+        try {
+            const response = await fetch(process.env.REACT_APP_ACCOUNTS_PATH + "/deleteAccount",{
+                method: "POST",
+                headers: {
+                    "Authorization" : `Bearer ${sessionStorage.getItem("token")}`,
+                    "Content-Type" : "application/json",
+                },
+                body: JSON.stringify({
+                    "accountToDelete" : name2
+                }),
+            });
+            const data = await response.json()
+            if(response.ok){
+                closeDeleteModal();
+                setUserDeleted(data.message);
+            } else {
+                closeDeleteModal();
+                setUserNotDeleted(data.message);
+            }
+        } catch(e) {
+            closeDeleteModal();
+            setUserNotDeleted("Error deleting user: " + e);
+        }
+    }
 
     return(
         <div className="deleteModalOverlay" onClick={closeDeleteModal}>
@@ -16,7 +38,7 @@ const AdminDeleteModal = ({ closeDeleteModal, name2 }) => {
                 </div>
                 <div className="deleteModalButtons">
                     <button className="deleteModalCancel" onClick={closeDeleteModal}>Cancel</button>
-                    <button className="deleteModalDelete">Yes, delete the account</button>
+                    <button className="deleteModalDelete" onClick={() => adminDeleteAccount()}>Yes, delete the account</button>
                 </div>
             </div>
         </div>
