@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './AdminPanel.css';
 import {useNavigate} from "react-router-dom";
+import trashcan from "../assets/graphics/trashIcon.png";
 import AdminDeleteModal from '../modals/adminDeleteModal';
 
 const AdminPanel = () => {
@@ -125,12 +126,13 @@ const AdminPanel = () => {
                           <p>No reported messages</p>
                       ) : (
                           reportedMessages.map((message) => (
-                              <div key={message.id} id={message.id} className="mb-4 p-3 border rounded">
-                                  <div className="flex-row text-xl">
-                                      <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
-                                  </div>
-                                  <p>{message.messageText}</p>
-                              </div>
+                            <div key={message.id} id={message.id} className="mb-4 p-3 border rounded relative">
+                                <div className="flex-row text-xl">
+                                    <p>{message.creatorUsername} - {reportedMessageOccurrences[message.messageId]}</p>
+                                </div>
+                                <p>{message.messageText}</p>
+                                <img src={trashcan} onClick={(e) => deleteMessage(e)}className="absolute top-2 right-2 w-7 h-7 cursor-pointer" />
+                            </div>
                           ))
                       )}
                   </div>
