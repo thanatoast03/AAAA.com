@@ -5,7 +5,6 @@ import com.example.backend.model.Account;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.access.method.P;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -227,10 +226,9 @@ public class AccountService implements UserDetailsService {
 
     private void replaceToken(Account account, String token) {
         String previousToken = account.getToken();
-        if (previousToken != null) {
+        if (previousToken != null && !jwtUtils.isExpired(previousToken)) {
             jwtUtils.addToBlacklist(previousToken); // invalidate previous token
         }
-
         account.setToken(token);
         accountRepository.save(account); // replaces with token in db
     }
