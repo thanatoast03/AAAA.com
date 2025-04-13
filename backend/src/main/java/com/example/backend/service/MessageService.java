@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
+import com.example.backend.model.ActionType;
 import com.example.backend.model.Message;
 import com.example.backend.model.ReportedMessage;
 import com.example.backend.repository.AccountRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,13 +25,15 @@ public class MessageService {
     private final ReportedMessageRepository reportedMessageRepository;
     private final AccountService accountService;
     private final JwtUtilService jwtUtilService;
+    private final RateLimiterService rateLimiterService;
 
-    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository, JwtUtilService jwtUtilService) {
+    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository, JwtUtilService jwtUtilService, RateLimiterService rateLimiterService) {
         this.messageRepository = messageRepository;
         this.accountRepository = accountRepository;
         this.reportedMessageRepository = reportedMessageRepository;
         this.accountService = accountService;
         this.jwtUtilService = jwtUtilService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {
@@ -56,6 +60,12 @@ public class MessageService {
         } else {
             throw new Exception("tried to send message with invalid account");
         }
+
+        // rate limiting check
+        if (rateLimiterService.isRateLimited(account.get().getId(), ActionType.MESSAGE, 20, Duration.ofSeconds(30))) {
+            throw new Exception("Sent too many messages in a short period of time. Please try again later.");
+        }
+        rateLimiterService.logAction(account.get().getId(), ActionType.MESSAGE); // if it gets past check, log it
 
         savedMessage.setNumReported(0); // set to 0 on initialization
         savedMessage.setTime(dateString);

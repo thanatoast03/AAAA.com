@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.DTO.*;
 import com.example.backend.model.Account;
+import com.example.backend.model.ActionType;
 import com.example.backend.model.AuthenticatedUser;
 import com.example.backend.repository.AccountRepository;
 import org.springframework.context.annotation.Lazy;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,11 +30,13 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtilService jwtUtils;
+    private final RateLimiterService rateLimiterService;
 
-    public AccountService(AccountRepository accountRepository, @Lazy AuthenticationManager authenticationManager, JwtUtilService jwtUtils) {
+    public AccountService(AccountRepository accountRepository, @Lazy AuthenticationManager authenticationManager, JwtUtilService jwtUtils, RateLimiterService rateLimiterService) {
         this.accountRepository = accountRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public Account saveAccount(RegisterRequest registerRequest) {
@@ -136,6 +140,12 @@ public class AccountService implements UserDetailsService {
         String oldUsername = getLoggedInUser().getUsername(); //get old username
         String newUsername = usernameRequest.getNewUsername(); //get new username from request
 
+        // rate limiting
+        if (rateLimiterService.isRateLimited(getLoggedInUser().getId(), ActionType.USERNAME_CHANGE, 5, Duration.ofMinutes(10))) {
+            throw new Exception("Too many username changes in 10 minutes. Please try again later.");
+        }
+        rateLimiterService.logAction(getLoggedInUser().getId(), ActionType.USERNAME_CHANGE); // if it gets past check, log it
+
         Account currentUser = accountRepository.findByUsername(oldUsername).orElseThrow(() -> new Exception("User not found"));
 
         if (accountRepository.existsByUsername(newUsername) || newUsername.equals(oldUsername)) {
@@ -163,6 +173,12 @@ public class AccountService implements UserDetailsService {
         String oldEmail = getLoggedInUser().getEmail(); //get old email for email change
         String newEmail = emailRequest.getNewEmail(); //get new email from request
 
+        // rate limiting
+        if (rateLimiterService.isRateLimited(getLoggedInUser().getId(), ActionType.EMAIL_CHANGE, 5, Duration.ofMinutes(10))) {
+            throw new Exception("Too many email changes in 10 minutes. Please try again later.");
+        }
+        rateLimiterService.logAction(getLoggedInUser().getId(), ActionType.EMAIL_CHANGE); // if it gets past check, log it
+
         Account currentUser = accountRepository.findByEmail(oldEmail).orElseThrow(() -> new Exception("User not found"));
 
         if (accountRepository.existsByEmail(newEmail) || newEmail.equals(oldEmail)) {
@@ -187,6 +203,12 @@ public class AccountService implements UserDetailsService {
     }
 
     public void changePassword(ChangePasswordRequest passwordRequest) throws Exception{
+        // rate limiting
+        if (rateLimiterService.isRateLimited(getLoggedInUser().getId(), ActionType.PASSWORD_CHANGE, 5, Duration.ofMinutes(10))) {
+            throw new Exception("Too many password changes in 10 minutes. Please try again later.");
+        }
+        rateLimiterService.logAction(getLoggedInUser().getId(), ActionType.PASSWORD_CHANGE); // if it gets past check, log it
+
         String email = getLoggedInUser().getEmail(); //get email for password change
         String newPassword = passwordRequest.getNewPassword(); //get new password from request
 

@@ -1,0 +1,12 @@
+package com.example.backend.model;
+
+public enum ActionType {
+    EMAIL_CHANGE,
+    EMAIL_CHANGE_TIMEOUT,
+    PASSWORD_CHANGE,
+    PASSWORD_CHANGE_TIMEOUT,
+    USERNAME_CHANGE,
+    USERNAME_CHANGE_TIMEOUT,
+    MESSAGE,
+    MESSAGE_TIMEOUT
+}
