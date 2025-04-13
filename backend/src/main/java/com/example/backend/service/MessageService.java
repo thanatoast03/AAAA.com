@@ -23,13 +23,15 @@ public class MessageService {
     private final ReportedMessageRepository reportedMessageRepository;
     private final AccountService accountService;
     private final JwtUtilService jwtUtilService;
+    private final RateLimiterService rateLimiterService;
 
-    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository, JwtUtilService jwtUtilService) {
+    public MessageService(AccountService accountService, MessageRepository messageRepository, AccountRepository accountRepository, ReportedMessageRepository reportedMessageRepository, JwtUtilService jwtUtilService, RateLimiterService rateLimiterService) {
         this.messageRepository = messageRepository;
         this.accountRepository = accountRepository;
         this.reportedMessageRepository = reportedMessageRepository;
         this.accountService = accountService;
         this.jwtUtilService = jwtUtilService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public Map<String, String> handleMessage(MessageRequest message, Principal principal) throws Exception {

@@ -28,11 +28,13 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtilService jwtUtils;
+    private final RateLimiterService rateLimiterService;
 
-    public AccountService(AccountRepository accountRepository, @Lazy AuthenticationManager authenticationManager, JwtUtilService jwtUtils) {
+    public AccountService(AccountRepository accountRepository, @Lazy AuthenticationManager authenticationManager, JwtUtilService jwtUtils, RateLimiterService rateLimiterService) {
         this.accountRepository = accountRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public Account saveAccount(RegisterRequest registerRequest) {
