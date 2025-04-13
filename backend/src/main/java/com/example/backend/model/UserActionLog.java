@@ -15,8 +15,9 @@ public class UserActionLog {
     @Column(nullable = false)
     private Long userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String actionType;
+    private ActionType actionType;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -38,11 +39,11 @@ public class UserActionLog {
         this.userId = userId;
     }
 
-    public String getActionType() {
+    public ActionType getActionType() {
         return actionType;
     }
 
-    public void setActionType(String actionType) {
+    public void setActionType(ActionType actionType) {
         this.actionType = actionType;
     }
 
