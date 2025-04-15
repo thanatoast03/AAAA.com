@@ -1,0 +1,1 @@
+"Disabled Spring CSRF protection","Disabling CSRF protection makes the application vulnerable to a Cross-Site Request Forgery (CSRF) attack.","error","CSRF vulnerability due to protection being disabled.","/src/main/java/com/example/backend/config/SecurityConfig.java","28","31","28","44"
