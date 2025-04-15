@@ -14,3 +14,6 @@ application-dev.properties
 ### VS Code ###
 .vscode/
 .idea
+
+### codeql ###
+codeql-db
