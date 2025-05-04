@@ -26,6 +26,12 @@ public class Account {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages;
 
+    @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportedMessage> reportsMade;  // messages this account has reported
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportedMessage> reportsReceived;  // messages created by this account that were reported
+
     @Column(nullable = true, length = 1000)
     private String token;
 
